@@ -199,6 +199,7 @@ class _DashBoardState extends State<DashBoard> {
                               flex: 10,
                             ),
                             AppContainer(
+                                border: 40,
                                 child: Padding(
                                   padding: EdgeInsets.only(
                                       left: 20.0,
@@ -210,8 +211,7 @@ class _DashBoardState extends State<DashBoard> {
                                     style: TextStyle(
                                         color: appPoint, fontSize: fontMiddle),
                                   ),
-                                ),
-                                border: 40),
+                                )),
                             Spacer(
                               flex: 10,
                             ),
