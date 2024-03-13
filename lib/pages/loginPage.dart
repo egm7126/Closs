@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 
 import '../utils/appColors.dart';
-import '../utils/appContainers.dart';
-import '../utils/appETCUtils.dart';
-import 'loginAfter.dart';
+import '../utils/appComponents.dart';
+import 'dashboardPage.dart';
 
 
-class LoginBefore extends StatefulWidget {
-  const LoginBefore({super.key});
+class Login extends StatefulWidget {
+  const Login({super.key});
 
   @override
-  State<LoginBefore> createState() => _LoginBeforeState();
+  State<Login> createState() => _LoginState();
 }
 
-class _LoginBeforeState extends State<LoginBefore> {
+class _LoginState extends State<Login> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  void _login() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,14 +57,14 @@ class _LoginBeforeState extends State<LoginBefore> {
                       child: Image.asset('assets/logo/name logo-cutout.png')),
                 ),
                 const Expanded(flex: 3, child: SizedBox()),
-                const Expanded(
+                Expanded(
                   flex: 4,
-                  child: AppTextField(text: '로그인 ID'),
+                  child: AppTextField(text: '로그인 ID', controller: _usernameController,),
                 ),
                 //Expanded(flex: 1, child: SizedBox()), //empty space
-                const Expanded(
+                Expanded(
                   flex: 4,
-                  child: AppTextField(text: '로그인 Password'),
+                  child: AppTextField(text: '로그인 Password', controller: _passwordController,),
                 ),
                 const Expanded(flex: 3, child: SizedBox()),
                 Expanded(

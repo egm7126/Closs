@@ -1,7 +1,7 @@
-import 'package:closs_b1/pages/loginBefore.dart';
+import 'package:closs_b1/pages/loginPage.dart';
 import 'package:closs_b1/utils/appColors.dart';
-import 'package:closs_b1/utils/appContainers.dart';
-import 'package:closs_b1/utils/appETCUtils.dart';
+import 'package:closs_b1/utils/appComponents.dart';
+import 'package:closs_b1/utils/appTools.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'AppFont',
       ),
-      home: const LoginBefore(),
+      home: const Login(),
     );
   }
 }
