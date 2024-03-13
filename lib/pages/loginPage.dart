@@ -31,8 +31,8 @@ class _LoginState extends State<Login> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Expanded(
-                  flex: 2,
+                const SizedBox(
+                  height: 50,
                   child: Row(
                     children: [
                       SizedBox(
@@ -65,21 +65,20 @@ class _LoginState extends State<Login> {
                   flex: 3,
                 ),
                 //login textfield
-                Expanded(
-                  flex: 8,
-                  child: SizeFixer(
-                      child: Column(
-                        children: [
-                          AppTextField(
-                            text: '로그인 ID',
-                            controller: _usernameController,
-                          ),
-                          AppTextField(
-                            text: '로그인 Password',
-                            controller: _passwordController,
-                          )
-                        ],
-                      )),
+                SizedBox(
+                  height: 200,
+                  child: Column(
+                    children: [
+                      AppTextField(
+                        text: '로그인 ID',
+                        controller: _usernameController,
+                      ),
+                      AppTextField(
+                        text: '로그인 Password',
+                        controller: _passwordController,
+                      )
+                    ],
+                  ),
                 ),
                 const Spacer(
                   flex: 3,
