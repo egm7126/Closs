@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 
 import '../utils/appTools.dart';
 
-class DashBoard extends StatefulWidget {
-  const DashBoard({super.key});
+class DashBoardPage extends StatefulWidget {
+  const DashBoardPage({super.key});
 
   @override
-  State<DashBoard> createState() => _DashBoardState();
+  State<DashBoardPage> createState() => _DashBoardPageState();
 }
 
-class _DashBoardState extends State<DashBoard> {
+class _DashBoardPageState extends State<DashBoardPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
