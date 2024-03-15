@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const apiKey = 'JeBNZ+LNRF0+OWBSfxYAxqp6skAHHS7N3TB2ZWDB/t1wxFWLBX+8qQro4Xpou7EByYjMMbqk4PZYONWAiSmIVw==';
+    const apiKey = 'JeBNZ+LNRF0+OWBSfxYAxqp6skAHHS7N3TB2ZWDB/t1wxFWLBX+8qQro4Xpou7EByYjMMbqk4PZYONWAiSmIVw==';//found out from 'decoding api key'
 
     return Scaffold(
       body: Center(
