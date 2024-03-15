@@ -3,7 +3,6 @@ import 'package:closs_b1/utils/appColors.dart';
 import 'package:closs_b1/utils/appComponents.dart';
 import 'package:closs_b1/utils/appConstansts.dart';
 import 'package:flutter/material.dart';
-
 import '../utils/appTools.dart';
 
 class DashBoardPage extends StatefulWidget {
@@ -214,6 +213,7 @@ class _SettingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
       onLongPress: (){
         Navigator.push(

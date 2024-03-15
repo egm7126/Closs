@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:closs_b1/utils/appComponents.dart';
 import 'package:closs_b1/utils/appConstansts.dart';
 import 'package:flutter/material.dart';
+import '../utils/appTools.dart';
 import '../utils/globalVars.dart';
 
 class SettingPage extends StatefulWidget {
@@ -22,7 +23,9 @@ class _SettingPageState extends State<SettingPage> {
     return AppPage(
         child: Column(
       children: [
-        Spacer(flex: 10,),
+        Spacer(
+          flex: 10,
+        ),
         //fan relations
         Expanded(
           flex: 10,
@@ -95,47 +98,10 @@ class _SettingPageState extends State<SettingPage> {
                 ),
               ),
             )),
-        const Spacer(flex: 10,),
+        const Spacer(
+          flex: 10,
+        ),
       ],
     ));
-  }
-}
-
-class ClockWidget extends StatefulWidget {
-  @override
-  _ClockWidgetState createState() => _ClockWidgetState();
-}
-
-class _ClockWidgetState extends State<ClockWidget> {
-  late Timer _timer;
-  late DateTime _currentTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentTime = DateTime.now();
-    _timer = Timer.periodic(Duration(seconds: 1), _updateTime);
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  void _updateTime(Timer timer) {
-    setState(() {
-      _currentTime = DateTime.now();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '현재 시각: ${_currentTime.hour}:${_currentTime.minute}:${_currentTime.second}',
-      style: TextStyle(
-        fontSize: fontMiddle,
-      ),
-    );
   }
 }
