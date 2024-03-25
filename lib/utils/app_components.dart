@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'appColors.dart';
-import 'appConstansts.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'app_colors.dart';
+import 'app_constants.dart';
 
 class AppPage extends StatefulWidget {
   const AppPage({
@@ -23,13 +24,24 @@ class _AppPageState extends State<AppPage> {
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'AppFont',
+        textTheme: const TextTheme(
+          bodySmall: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+          bodyMedium: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+          bodyLarge: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         colorSchemeSeed: Colors.white,
         scaffoldBackgroundColor: appBackWhite,
       ),
       home: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: SafeArea(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
             child: widget.child,
           ),
         ),
@@ -73,10 +85,12 @@ class AppTextField extends StatelessWidget {
     super.key,
     required this.text,
     required this.controller,
+    this.textHiding = false,
   });
 
   final String text;
   TextEditingController controller = TextEditingController();
+  final bool textHiding;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +106,7 @@ class AppTextField extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
               ),
+              obscureText: textHiding,
             ),
           )),
     );
@@ -165,4 +180,14 @@ class _AppWidgetButtonState extends State<AppWidgetButton> {
       ),
     );
   }
+}
+
+appToast({required String msg}){
+  Fluttertoast.showToast(
+    msg: msg,
+    toastLength: Toast.LENGTH_SHORT,
+    gravity: ToastGravity.BOTTOM,
+    backgroundColor: Colors.green,
+    textColor: Colors.white,
+  );
 }

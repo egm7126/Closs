@@ -37,7 +37,17 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_svg: ^2.0.10+1
   korea_weather_api: ^1.0.4
-  flutter_bluetooth_serial: ^0.4.0
+  flutter_bluetooth_serial_ble: ^0.5.0
+  scoped_model: ^2.0.0
+  firebase_core: ^2.27.1
+  cloud_firestore: ^4.15.9
+  firebase_auth: ^4.17.9
+  fluttertoast: ^8.2.4
+  #battery_plus: ^5.0.3 # this is occur 의존성 class duplicated problem
+  #flutter_bluetooth_serial: ^0.4.0 for bluetooth t4
+  #all_bluetooth: ^0.1.0 #for bluetooth t5
+  #permission_handler: ^11.3.0 #for bluetooth t5b1
+  #flutter_chat_bubble: ^2.0.2 #fot bluetooth t5 i think
   #flutter_blue: ^0.8.0
   #bluetooth_classic: ^0.0.1 #for bluetooth t1
 
@@ -105,6 +115,16 @@ flutter:
     - family: RoundAppFont
       fonts:
         - asset: assets/fonts/Jua-Regular.ttf
+    - family: PrettyAppFont
+      fonts:
+        - asset: assets/fonts/Poppins-Bold.ttf
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+        - asset: assets/fonts/Poppins-Thin.ttf
+        - asset: assets/fonts/Poppins-Light.ttf
+
 
   #
   # For details regarding fonts from package dependencies,

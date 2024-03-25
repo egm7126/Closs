@@ -1,10 +1,14 @@
-import 'package:closs_b1/pages/loginPage.dart';
-import 'package:closs_b1/utils/appColors.dart';
-import 'package:closs_b1/utils/appComponents.dart';
-import 'package:closs_b1/utils/appTools.dart';
+import 'package:closs_b1/pages/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized(); // 필수
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 

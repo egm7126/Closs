@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'package:closs_b1/utils/appComponents.dart';
-import 'package:closs_b1/utils/appConstansts.dart';
+import 'package:closs_b1/utils/app_components.dart';
+import 'package:closs_b1/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import '../utils/appTools.dart';
-import '../utils/globalVars.dart';
+import '../utils/global_vars.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -23,7 +23,7 @@ class _SettingPageState extends State<SettingPage> {
     return AppPage(
         child: Column(
       children: [
-        Spacer(
+        const Spacer(
           flex: 10,
         ),
         //fan relations
@@ -41,7 +41,7 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                 ),
               ),
-              Spacer(
+              const Spacer(
                 flex: 5,
               ),
               Expanded(
@@ -94,7 +94,7 @@ class _SettingPageState extends State<SettingPage> {
                 border: 10,
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: ClockWidget(),
+                  child: ClockText(frontString : '현재시간 ',y: true,mth: true,d: true, h: true, min: true, s:true,),
                 ),
               ),
             )),

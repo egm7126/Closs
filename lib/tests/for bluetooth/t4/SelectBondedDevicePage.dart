@@ -1,8 +1,26 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'BluetoothDeviceListEntry.dart';
 
-import './BluetoothDeviceListEntry.dart';
+enum DeviceAvailability {
+  no,
+  maybe,
+  yes,
+}
+
+class DeviceWithAvailability {
+  BluetoothDevice device;
+  DeviceAvailability availability;
+  //int rssi;
+
+  DeviceWithAvailability({
+    required this.device,
+    required this.availability,
+    //required this.rssi,
+    //required super.address,
+  });
+}
 
 class SelectBondedDevicePage extends StatefulWidget {
   /// If true, on page start there is performed discovery upon the bonded devices.
@@ -12,17 +30,16 @@ class SelectBondedDevicePage extends StatefulWidget {
   const SelectBondedDevicePage({super.key, this.checkAvailability = true});
 
   @override
-  _SelectBondedDevicePage createState() => _SelectBondedDevicePage();
+  SelectBondedDevicePageState createState() => SelectBondedDevicePageState();
 }
 
-class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
-  List<_DeviceWithAvailability> devices = List<_DeviceWithAvailability>();
+class SelectBondedDevicePageState extends State<SelectBondedDevicePage> {
+  late List<DeviceWithAvailability> devices;
 
   // Availability
-  StreamSubscription<BluetoothDiscoveryResult> _discoveryStreamSubscription;
-  bool _isDiscovering;
-
-  _SelectBondedDevicePage();
+  late StreamSubscription<BluetoothDiscoveryResult>
+      _discoveryStreamSubscription;
+  late bool _isDiscovering;
 
   @override
   void initState() {
@@ -41,11 +58,14 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
       setState(() {
         devices = bondedDevices
             .map(
-              (device) => _DeviceWithAvailability(
-                device,
-                widget.checkAvailability
-                    ? _DeviceAvailability.maybe
-                    : _DeviceAvailability.yes
+              (device) => DeviceWithAvailability(
+                device: device,
+                availability: widget.checkAvailability
+                    ? DeviceAvailability.maybe
+                    : DeviceAvailability.yes,
+                //FlutterBluetoothSerial.instance.startDiscovery().listen((r)
+                //rssi: 0, //#todo
+                //address: '', //#todo
               ),
             )
             .toList();
@@ -67,10 +87,10 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
       setState(() {
         Iterator i = devices.iterator;
         while (i.moveNext()) {
-          var _device = i.current;
-          if (_device.device == r.device) {
-            _device.availability = _DeviceAvailability.yes;
-            _device.rssi = r.rssi;
+          var device = i.current;
+          if (device.device == r.device) {
+            device.availability = DeviceAvailability.yes;
+            device.rssi = r.rssi;
           }
         }
       });
@@ -96,8 +116,8 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
     List<BluetoothDeviceListEntry> list = devices
         .map((device) => BluetoothDeviceListEntry(
               device: device.device,
-              rssi: device.rssi,
-              enabled: device.availability == _DeviceAvailability.yes,
+              //rssi: device.rssi,
+              enabled: device.availability == DeviceAvailability.yes,
               onTap: () {
                 Navigator.of(context).pop(device.device);
               },
@@ -128,18 +148,4 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
       body: ListView(children: list),
     );
   }
-}
-
-enum _DeviceAvailability {
-  no,
-  maybe,
-  yes,
-}
-
-class _DeviceWithAvailability extends BluetoothDevice {
-  BluetoothDevice device;
-  _DeviceAvailability availability;
-  int rssi;
-
-  _DeviceWithAvailability(this.device, this.availability, this.rssi);
 }

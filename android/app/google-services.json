@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445237666877",
+    "project_id": "mossis-family",
+    "storage_bucket": "mossis-family.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445237666877:android:31ed266985da1aadfd7654",
+        "android_client_info": {
+          "package_name": "com.example.closs_b1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOxCL-B0kj68pzzwpjsDexSW6wFMoQK4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

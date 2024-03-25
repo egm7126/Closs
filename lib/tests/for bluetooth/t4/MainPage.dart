@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-import './SelectBondedDevicePage.dart';
-import './ChatPage.dart';
+import 'SelectBondedDevicePage.dart';
+import 'ChatPage.dart';
 import 'communication.dart';
 //import './ChatPage2.dart';
 
@@ -133,6 +133,7 @@ class _MainPage extends State<MainPage> {
               title: TextButton(
                 child: const Text('Connect to paired device to chat'),
                 onPressed: () async {
+
                   final BluetoothDevice selectedDevice =
                       await Navigator.of(context).push(
                     MaterialPageRoute(
