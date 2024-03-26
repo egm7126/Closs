@@ -2,7 +2,6 @@ import 'package:closs_b1/pages/setting_page.dart';
 import 'package:closs_b1/utils/app_colors.dart';
 import 'package:closs_b1/utils/app_components.dart';
 import 'package:closs_b1/utils/app_constants.dart';
-import 'package:closs_b1/utils/weather_relations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
@@ -25,12 +24,19 @@ class _DashBoardPageState extends State<DashBoardPage> {
   String rainIndex = '';
   String skyForecast = '';
 
+  double nx = 126.5765034;
+  double ny= 36.4119319;
+
+  GeoCrdText geoCrdText;
+
   //return item list(여러 category의 data를 돌려줌)
   Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
     final weather = Weather(
       serviceKey: weatherApiKey,
       pageNo: 1,
       numOfRows: 100,
+      nx: nx,
+      ny: ny,
     );
     final List<ItemSuperNct> items = [];
     final json =
@@ -44,6 +50,10 @@ class _DashBoardPageState extends State<DashBoardPage> {
   Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
     final weather = Weather(
       serviceKey: weatherApiKey,
+      pageNo: 1,
+      numOfRows: 100,
+      nx: nx,
+      ny: ny,
     );
 
     final List<ItemSuperFct> items = [];
@@ -54,6 +64,10 @@ class _DashBoardPageState extends State<DashBoardPage> {
     json.map((e) => setState(() => items.add(e))).toList();
 
     return items;
+  }
+
+  Future<void> makeInstanceForGeoCrdText() async{
+    geoCrdText = GeoCrdText();
   }
 
   @override
@@ -189,6 +203,7 @@ class _DashBoardPageState extends State<DashBoardPage> {
                                         const Spacer(),
                                       ],
                                     ),
+                                    //Text(geoCrdText.getLocationString()),
                                     const Spacer(
                                       flex: 10,
                                     ),

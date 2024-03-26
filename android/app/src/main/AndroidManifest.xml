@@ -25,6 +25,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!--for bluetooth line ended-->
 
+    <!--for gps function-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:label="closs_b1"
         android:name="${applicationName}"

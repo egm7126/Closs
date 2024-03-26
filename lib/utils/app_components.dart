@@ -187,7 +187,8 @@ appToast({required String msg}){
     msg: msg,
     toastLength: Toast.LENGTH_SHORT,
     gravity: ToastGravity.BOTTOM,
-    backgroundColor: Colors.green,
+    backgroundColor: Colors.black54,
     textColor: Colors.white,
+    fontSize: 16.0,
   );
 }
