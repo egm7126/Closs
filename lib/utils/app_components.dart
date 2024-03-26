@@ -192,3 +192,21 @@ appToast({required String msg}){
     fontSize: 16.0,
   );
 }
+
+class ClossProtocol {
+  String kind = '';
+  String serial = '';
+  String content = '';
+
+  ClossProtocol(String data) {
+    RegExp regex = RegExp(r"@k(.*?)@s(.*?)@c(.*)"); // Define regular expression pattern
+    Match? match = regex.firstMatch(data); // Find the first match in the input data
+
+    if(match != null){
+      kind = match.group(1)!; // Extract the kind
+      serial = match.group(2)!; // Extract the serial
+      content = match.group(3)!; // Extract the content
+    }
+
+  }
+}

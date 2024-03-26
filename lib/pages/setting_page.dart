@@ -3,8 +3,8 @@ import 'package:closs_b1/utils/app_components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 import 'package:geolocator/geolocator.dart';
-import '../tests/for bluetooth/t6(success)/lib/SelectBondedDevicePage.dart';
 import '../utils/appTools.dart';
+import '../utils/bt_relations/SelectBondedDevicePage.dart';
 import '../utils/global_vars.dart';
 import 'bt_communication_page.dart';
 

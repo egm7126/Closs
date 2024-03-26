@@ -1,10 +1,13 @@
 import 'package:closs_b1/pages/sign_up_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/app_components.dart';
+import '../utils/bt_relations/SelectBondedDevicePage.dart';
+import '../utils/global_vars.dart';
 import 'dashboard_page.dart';
 
 class Login extends StatefulWidget {
@@ -17,21 +20,41 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+
+  Future<void> _signUp() async {
+    try {
+      UserCredential userCredential =
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _usernameController.text,
+        password: _passwordController.text,
+      );
+      // 회원가입 성공 시 토스트 알림 표시
+      appToast(msg: "회원가입에 성공했습니다.");
+
+      // 회원가입 성공 시 페이지 이동 등의 처리
+     goDashWithBond();
+
+    } catch (e) {
+      // 회원가입 실패 시 에러 처리
+      // 회원가입 성공 시 토스트 알림 표시
+      appToast(msg: "회원가입에 실패했습니다.");
+
+      print("Failed to sign up with email and password: $e");
+      // 에러를 사용자에게 표시하거나 다른 처리를 수행할 수 있습니다.
+    }
+  }
 
   Future<void> _login() async {
     try {
       UserCredential userCredential =
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _usernameController.text,
-        password: _passwordController.text
+        password: _passwordController.text,
       );
       appToast(msg: "로그인 되었습니다.");
-      // 로그인 성공 시 페이지 이동
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const DashBoardPage()),
-      );
+
+
+      await goDashWithBond();
     } catch (e) {
       // 로그인 실패 시 에러 처리
       appToast(msg: "로그인에 실패했습니다.");
@@ -40,6 +63,21 @@ class _LoginState extends State<Login> {
       }
       // 에러를 사용자에게 표시하거나 다른 처리를 수행할 수 있습니다.
     }
+
+  }
+
+  Future<void> goDashWithBond() async {
+    selectedDevice =
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return const SelectBondedDevicePage(
+            checkAvailability: false,
+          );
+        },
+      ),
+    );
+
   }
 
   @override
@@ -53,6 +91,7 @@ class _LoginState extends State<Login> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              //person icon
               const SizedBox(
                 height: 50,
                 child: Row(
@@ -76,6 +115,7 @@ class _LoginState extends State<Login> {
               const Spacer(
                 flex: 5,
               ),
+              //logo
               Expanded(
                 flex: 8,
                 child: SizedBox(
@@ -109,13 +149,11 @@ class _LoginState extends State<Login> {
               Expanded(
                 flex: 5,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                      onPressed: (){
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SignUp()),
-                        );
+                      onPressed: () {
+                        _signUp();
                       },
                       child: Container(
                         height: 40,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../utils/app_colors.dart';
 import '../utils/app_components.dart';
 import 'login_page.dart';
 
@@ -53,23 +54,43 @@ class _SignUpState extends State<SignUp> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: '이메일',
+            SizedBox(
+              height: 200,
+              child: Column(
+                children: [
+                  AppTextField(
+                    text: '회원가입 ID',
+                    controller: _emailController,
+                  ),
+                  AppTextField(
+                    text: '회원가입 Password',
+                    controller: _passwordController,
+                    textHiding: true,
+                  )
+                ],
               ),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: '비밀번호',
-              ),
-              obscureText: true,
             ),
             SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: _signUp,
-              child: Text('회원가입'),
+            TextButton(
+              onPressed: (){
+                _signUp();
+              },
+              child: Container(
+                height: 40,
+                width: 100,
+                decoration: BoxDecoration(
+                  color: appPoint,
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Center(
+                  child: Text(
+                    '회원가입',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

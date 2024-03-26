@@ -4,13 +4,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 
+import '../utils/app_components.dart';
+import '../utils/global_vars.dart';
+
 class ChatPage extends StatefulWidget {
   final BluetoothDevice server;
 
-  const ChatPage({required this.server});
+  const ChatPage({super.key, required this.server});
 
   @override
-  _ChatPage createState() => new _ChatPage();
+  _ChatPage createState() => _ChatPage();
 }
 
 class _Message {
@@ -21,17 +24,18 @@ class _Message {
 }
 
 class _ChatPage extends State<ChatPage> {
-  static final clientID = 0;
+  static const clientID = 0;
   BluetoothConnection? connection;
 
   List<_Message> messages = List<_Message>.empty(growable: true);
   String _messageBuffer = '';
 
   final TextEditingController textEditingController =
-  new TextEditingController();
-  final ScrollController listScrollController = new ScrollController();
+      TextEditingController();
+  final ScrollController listScrollController = ScrollController();
 
   bool isConnecting = true;
+
   bool get isConnected => (connection?.isConnected ?? false);
 
   bool isDisconnecting = false;
@@ -60,7 +64,7 @@ class _ChatPage extends State<ChatPage> {
         } else {
           print('Disconnected remotely!');
         }
-        if (this.mounted) {
+        if (mounted) {
           setState(() {});
         }
       });
@@ -85,27 +89,26 @@ class _ChatPage extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final List<Row> list = messages.map((_message) {
-      print(_message.text.trim());
       return Row(
-        children: <Widget>[
-          Container(
-            child: Text(
-                    (text) {
-                  return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
-                }(_message.text.trim()),
-                style: TextStyle(color: Colors.white)),
-            padding: EdgeInsets.all(12.0),
-            margin: EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
-            width: 222.0,
-            decoration: BoxDecoration(
-                color:
-                _message.whom == clientID ? Colors.blueAccent : Colors.grey,
-                borderRadius: BorderRadius.circular(7.0)),
-          ),
-        ],
         mainAxisAlignment: _message.whom == clientID
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            padding: const EdgeInsets.all(12.0),
+            margin: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+            width: 222.0,
+            decoration: BoxDecoration(
+                color:
+                    _message.whom == clientID ? Colors.blueAccent : Colors.grey,
+                borderRadius: BorderRadius.circular(7.0)),
+            child: Text(
+                (text) {
+                  return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
+                }(_message.text.trim()),
+                style: const TextStyle(color: Colors.white)),
+          ),
+        ],
       );
     }).toList();
 
@@ -113,10 +116,10 @@ class _ChatPage extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
           title: (isConnecting
-              ? Text('Connecting chat to ' + serverName + '...')
+              ? Text('Connecting chat to $serverName...')
               : isConnected
-              ? Text('Live chat with ' + serverName)
-              : Text('Chat log with ' + serverName))),
+                  ? Text('Live chat with $serverName')
+                  : Text('Chat log with $serverName'))),
       body: SafeArea(
         child: Column(
           children: <Widget>[
@@ -138,8 +141,8 @@ class _ChatPage extends State<ChatPage> {
                         hintText: isConnecting
                             ? 'Wait until connected...'
                             : isConnected
-                            ? 'Type your message...'
-                            : 'Chat got disconnected',
+                                ? 'Type your message...'
+                                : 'Chat got disconnected',
                         hintStyle: const TextStyle(color: Colors.grey),
                       ),
                       enabled: isConnected,
@@ -190,6 +193,7 @@ class _ChatPage extends State<ChatPage> {
     // Create message if there is new line character
     String dataString = String.fromCharCodes(buffer);
     int index = buffer.indexOf(13);
+
     if (~index != 0) {
       setState(() {
         messages.add(
@@ -197,16 +201,19 @@ class _ChatPage extends State<ChatPage> {
             1,
             backspacesCounter > 0
                 ? _messageBuffer.substring(
-                0, _messageBuffer.length - backspacesCounter)
+                    0, _messageBuffer.length - backspacesCounter)
                 : _messageBuffer + dataString.substring(0, index),
           ),
         );
+
+        listenData();
         _messageBuffer = dataString.substring(index);
+
       });
     } else {
       _messageBuffer = (backspacesCounter > 0
           ? _messageBuffer.substring(
-          0, _messageBuffer.length - backspacesCounter)
+              0, _messageBuffer.length - backspacesCounter)
           : _messageBuffer + dataString);
     }
   }
@@ -235,5 +242,24 @@ class _ChatPage extends State<ChatPage> {
         setState(() {});
       }
     }
+  }
+
+  void listenData() {
+    String containEnterString = _messageBuffer;
+    int enterIndex = containEnterString.indexOf("\n");
+
+    String pureString;
+    if (enterIndex != -1) { // If newline character found
+      pureString = containEnterString.substring(enterIndex + 1); // Extract the substring after the newline character
+    } else {
+      pureString = ""; // If no newline character found, set extractedString as empty string
+    }
+    stringReceived = pureString;
+    
+    receivedByProtocol = ClossProtocol(stringReceived);
+    
+    print("Kind: ${receivedByProtocol.kind}"); // Print the extracted kind
+    print("Serial: ${receivedByProtocol.serial}"); // Print the extracted serial
+    print("Content: ${receivedByProtocol.content}"); // Print the extracted content
   }
 }

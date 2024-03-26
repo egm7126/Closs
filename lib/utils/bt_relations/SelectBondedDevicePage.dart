@@ -1,8 +1,7 @@
-import 'dart:async';
-
+import 'dart:async' show StreamSubscription;
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
-
+import '../../pages/dashboard_page.dart';
 import 'BluetoothDeviceListEntry.dart';
 
 class SelectBondedDevicePage extends StatefulWidget {
@@ -10,10 +9,10 @@ class SelectBondedDevicePage extends StatefulWidget {
   /// Then, if they are not avaliable, they would be disabled from the selection.
   final bool checkAvailability;
 
-  const SelectBondedDevicePage({this.checkAvailability = true});
+  const SelectBondedDevicePage({super.key, this.checkAvailability = true});
 
   @override
-  _SelectBondedDevicePage createState() => new _SelectBondedDevicePage();
+  _SelectBondedDevicePage createState() => _SelectBondedDevicePage();
 }
 
 enum _DeviceAvailability {
@@ -116,6 +115,10 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
               enabled: _device.availability == _DeviceAvailability.yes,
               onTap: () {
                 Navigator.of(context).pop(_device.device);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DashBoardPage()),
+                );
               },
             ))
         .toList();

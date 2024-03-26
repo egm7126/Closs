@@ -1,11 +1,14 @@
+import 'dart:isolate';
 import 'package:closs_b1/pages/setting_page.dart';
 import 'package:closs_b1/utils/app_colors.dart';
 import 'package:closs_b1/utils/app_components.dart';
 import 'package:closs_b1/utils/app_constants.dart';
+import 'package:closs_b1/utils/global_vars.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 import '../utils/appTools.dart';
+import '../utils/bt_relations/ChatPage.dart';
 
 class DashBoardPage extends StatefulWidget {
   const DashBoardPage({
@@ -27,7 +30,10 @@ class _DashBoardPageState extends State<DashBoardPage> {
   double nx = 126.5765034;
   double ny= 36.4119319;
 
-  GeoCrdText geoCrdText;
+  String innerHum = receivedByProtocol.content;
+  String innerTemp = receivedByProtocol.content;
+
+  //GeoCrdText geoCrdText;
 
   //return item list(여러 category의 data를 돌려줌)
   Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
@@ -67,12 +73,25 @@ class _DashBoardPageState extends State<DashBoardPage> {
   }
 
   Future<void> makeInstanceForGeoCrdText() async{
-    geoCrdText = GeoCrdText();
+    //geoCrdText = GeoCrdText();
+  }
+  void backgroundTask(SendPort sendPort) {
+    if(selectedDevice !=null){
+      runApp(ChatPage(server: selectedDevice!));
+    }
+  }
+
+  void startBackgroundTask() async {
+    final ReceivePort receivePort = ReceivePort();
+    await Isolate.spawn(backgroundTask, receivePort.sendPort);
+    print('backround program begin');
   }
 
   @override
   void initState() {
     super.initState();
+
+    startBackgroundTask();
 
     //카테고리별 날씨데이터 행렬을 받기
     superNctItems = getSuperNctListJson();
@@ -255,12 +274,12 @@ class _DashBoardPageState extends State<DashBoardPage> {
                         decoration: const BoxDecoration(
                           color: appBackGrey,
                         ),
-                        child: const Column(
+                        child: Column(
                           children: [
-                            Spacer(
+                            const Spacer(
                               flex: 10,
                             ),
-                            Text(
+                            const Text(
                               '현재 가구 내부',
                               style: TextStyle(fontSize: fontMiddleBig),
                             ),
@@ -273,12 +292,12 @@ class _DashBoardPageState extends State<DashBoardPage> {
                                 Spacer(),
                                 _SettingButton(
                                   index: '온도',
-                                  value: '20도',
+                                  value: innerTemp,
                                 ),
                                 Spacer(),
                                 _SettingButton(
                                   index: '습도',
-                                  value: '85%',
+                                  value: innerHum,
                                 ),
                                 Spacer(),
                               ],
