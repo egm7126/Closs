@@ -1,3 +1,5 @@
+import 'package:closs_b1/utils/global_vars.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -208,5 +210,55 @@ class ClossProtocol {
       content = match.group(3)!; // Extract the content
     }
 
+  }
+}
+
+class getFire extends StatefulWidget {
+  @override
+  _getFireState createState() => _getFireState();
+
+  static void getTemp(){
+    FirebaseFirestore.instance.collection("RP").snapshots().listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        for (var document in snapshot.docs) {
+          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+          print(data);
+          temp = data.toString();
+          // 여기서 데이터 처리를 할 수 있습니다.
+        }
+      } else {
+        print('No Data Available');
+      }
+    });
+  }
+
+}
+
+class _getFireState extends State<getFire> {
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection("RP").snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No Data Available'));
+        }
+
+        return ListView(
+          children: snapshot.data!.docs.map((DocumentSnapshot document) {
+            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+            print(data);
+            return Text('hi');
+          }).toList(),
+        );
+      },
+    );
   }
 }

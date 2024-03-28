@@ -1,14 +1,18 @@
+import 'dart:ffi';
 import 'dart:isolate';
 import 'package:closs_b1/pages/setting_page.dart';
 import 'package:closs_b1/utils/app_colors.dart';
 import 'package:closs_b1/utils/app_components.dart';
 import 'package:closs_b1/utils/app_constants.dart';
 import 'package:closs_b1/utils/global_vars.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 import '../utils/appTools.dart';
 import '../utils/bt_relations/ChatPage.dart';
+
+
 
 class DashBoardPage extends StatefulWidget {
   const DashBoardPage({
@@ -20,6 +24,8 @@ class DashBoardPage extends StatefulWidget {
 }
 
 class _DashBoardPageState extends State<DashBoardPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   late Future<List<ItemSuperNct>> superNctItems; //날씨 데이터 행렬을 받을 녀석
   late Future<List<ItemSuperFct>> superFctItems;
   String hum = '';
@@ -27,10 +33,8 @@ class _DashBoardPageState extends State<DashBoardPage> {
   String rainIndex = '';
   String skyForecast = '';
 
-  double nx = 126.5765034;
-  double ny= 36.4119319;
-
   String innerHum = receivedByProtocol.content;
+
   String innerTemp = receivedByProtocol.content;
 
   //GeoCrdText geoCrdText;
@@ -72,11 +76,12 @@ class _DashBoardPageState extends State<DashBoardPage> {
     return items;
   }
 
-  Future<void> makeInstanceForGeoCrdText() async{
+  Future<void> makeInstanceForGeoCrdText() async {
     //geoCrdText = GeoCrdText();
   }
+
   void backgroundTask(SendPort sendPort) {
-    if(selectedDevice !=null){
+    if (selectedDevice != null) {
       runApp(ChatPage(server: selectedDevice!));
     }
   }
@@ -91,7 +96,7 @@ class _DashBoardPageState extends State<DashBoardPage> {
   void initState() {
     super.initState();
 
-    startBackgroundTask();
+    //startBackgroundTask();
 
     //카테고리별 날씨데이터 행렬을 받기
     superNctItems = getSuperNctListJson();
@@ -126,212 +131,234 @@ class _DashBoardPageState extends State<DashBoardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-          useMaterial3: true,
-          fontFamily: 'AppFont',
-          textTheme: const TextTheme(
-            bodySmall: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-            bodyMedium: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-            bodyLarge: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          )),
-      home: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              children: [
-                //upper part
-                Expanded(
-                  flex: 10,
-                  child: Column(
-                    children: [
-                      //weather
-                      Expanded(
-                        flex: 10,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Spacer(
-                              flex: 10,
-                            ),
-                            //weather sign
-                            Expanded(
-                              flex: 60,
-                              child: buildWeatherImage(skyCodeToString(int.parse(
-                                  skyForecast))), //buildWeatherImage(rainIndex),
-                            ),
-                            const Spacer(
-                              flex: 10,
-                            ),
-                            //presentation information
-                            SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: AppContainer(
-                                border: 10,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Spacer(
-                                      flex: 10,
-                                    ),
-                                    const ClockText(
-                                      y: true,
-                                      mth: true,
-                                      d: true,
-                                      style: TextStyle(fontSize: fontMiddle, fontWeight: FontWeight.w300),
-                                    ),
-                                    const ClockText(
-                                      h: true,
-                                      min: true,
-                                      style: TextStyle(fontSize:60, fontFamily: 'PrettyAppFont', fontWeight: FontWeight.bold),
-                                      displayType: ':',
-                                    ),
-                                    const Spacer(
-                                      flex: 30,
-                                    ),
-                                    //presentation weather para
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Spacer(),
-                                        Text(
-                                          '$temp°C',
-                                          style: const TextStyle(
-                                            color: appPoint,
-                                            fontSize: fontMiddleBig,
+    getFire.getTemp();
+    try {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+            useMaterial3: true,
+            fontFamily: 'AppFont',
+            textTheme: const TextTheme(
+              bodySmall: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+              bodyMedium: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+              bodyLarge: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            )),
+        home: Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: Column(
+                children: [
+                  //upper part
+                  Expanded(
+                    flex: 10,
+                    child: Column(
+                      children: [
+                        //weather
+                        Expanded(
+                          flex: 10,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Spacer(
+                                flex: 10,
+                              ),
+                              //weather sign
+                              Expanded(
+                                flex: 60,
+                                child: buildWeatherImage(skyCodeToString(int.parse(
+                                    skyForecast))), //buildWeatherImage(rainIndex),
+                              ),
+                              const Spacer(
+                                flex: 10,
+                              ),
+                              //presentation information
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: AppContainer(
+                                  border: 10,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Spacer(
+                                        flex: 10,
+                                      ),
+                                      const ClockText(
+                                        y: true,
+                                        mth: true,
+                                        d: true,
+                                        style: TextStyle(
+                                            fontSize: fontMiddle,
+                                            fontWeight: FontWeight.w300),
+                                      ),
+                                      const ClockText(
+                                        h: true,
+                                        min: true,
+                                        style: TextStyle(
+                                            fontSize: 60,
+                                            fontFamily: 'PrettyAppFont',
+                                            fontWeight: FontWeight.bold),
+                                        displayType: ':',
+                                      ),
+                                      const Spacer(
+                                        flex: 30,
+                                      ),
+                                      //
+                                      //
+                                      // presentation weather para
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Spacer(),
+                                          Text(
+                                            '$temp°C',
+                                            style: const TextStyle(
+                                              color: appPoint,
+                                              fontSize: fontMiddleBig,
+                                            ),
                                           ),
-                                        ),
-                                        const Spacer(),
-                                        Text(
-                                          '$hum%',
-                                          style: const TextStyle(
-                                            color: appPoint,
-                                            fontSize: fontMiddleBig,
+                                          const Spacer(),
+                                          Text(
+                                            '$hum%',
+                                            style: const TextStyle(
+                                              color: appPoint,
+                                              fontSize: fontMiddleBig,
+                                            ),
                                           ),
-                                        ),
-                                        const Spacer(),
-                                      ],
-                                    ),
-                                    //Text(geoCrdText.getLocationString()),
-                                    const Spacer(
-                                      flex: 10,
-                                    ),
-                                  ],
+                                          const Spacer(),
+                                        ],
+                                      ),
+                                      //Text(geoCrdText.getLocationString()),
+                                      const Spacer(
+                                        flex: 10,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Spacer(
-                              flex: 10,
-                            ),
-                          ],
+                              const Spacer(
+                                flex: 10,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            OtherCityCard(
-                              cityCountry: '대한민국',
-                              cityName: '부산',
-                              hum: '60%',
-                              temp: '25도',
-                            ),
-                            OtherCityCard(
-                              cityCountry: '대한민국',
-                              cityName: '서울',
-                              hum: '40%',
-                              temp: '18도',
-                            ),
-                            OtherCityCard(
-                              cityCountry: '미국',
-                              cityName: '뉴욕',
-                              hum: '30%',
-                              temp: '24도',
-                            ),
-                          ],
+                        const SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              OtherCityCard(
+                                cityCountry: '대한민국',
+                                cityName: '부산',
+                                hum: '60%',
+                                temp: '25도',
+                              ),
+                              OtherCityCard(
+                                cityCountry: '대한민국',
+                                cityName: '서울',
+                                hum: '40%',
+                                temp: '18도',
+                              ),
+                              OtherCityCard(
+                                cityCountry: '미국',
+                                cityName: '뉴욕',
+                                hum: '30%',
+                                temp: '24도',
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                //downer part
-                Expanded(
-                  flex: 15,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Container(
-                        decoration: const BoxDecoration(
-                          color: appBackGrey,
-                        ),
-                        child: Column(
-                          children: [
-                            const Spacer(
-                              flex: 10,
-                            ),
-                            const Text(
-                              '현재 가구 내부',
-                              style: TextStyle(fontSize: fontMiddleBig),
-                            ),
-                            Spacer(
-                              flex: 10,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Spacer(),
-                                _SettingButton(
-                                  index: '온도',
-                                  value: innerTemp,
-                                ),
-                                Spacer(),
-                                _SettingButton(
-                                  index: '습도',
-                                  value: innerHum,
-                                ),
-                                Spacer(),
-                              ],
-                            ),
-                            Spacer(
-                              flex: 10,
-                            ),
-                            AppContainer(
-                                border: 40,
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                      left: 20.0,
-                                      right: 20.0,
-                                      top: 12.0,
-                                      bottom: 8.0),
-                                  child: Text(
-                                    '환기가 필요합니다.',
-                                    style: TextStyle(
-                                        color: appPoint, fontSize: fontMiddle),
+                  //downer part
+                  Expanded(
+                    flex: 15,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Container(
+                          decoration: const BoxDecoration(
+                            color: appBackGrey,
+                          ),
+                          child: Column(
+                            children: [
+                              const Spacer(
+                                flex: 10,
+                              ),
+                              const Text(
+                                '현재 가구 내부',
+                                style: TextStyle(fontSize: fontMiddleBig),
+                              ),
+                              const Spacer(
+                                flex: 10,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Spacer(),
+                                  _SettingButton(
+                                    index: '온도',
+                                    value: innerTemp,
                                   ),
-                                )),
-                            Spacer(
-                              flex: 10,
-                            ),
-                          ],
-                        )),
-                  ),
-                )
-              ],
+                                  SizedBox(
+                                    height: 10,
+                                    width: 10,
+                                    child: Text(temp),
+                                  ),
+                                  const Spacer(),
+                                  _SettingButton(
+                                    index: '습도',
+                                    value: innerHum,
+                                  ),
+                                  const Spacer(),
+                                ],
+                              ),
+                              const Spacer(
+                                flex: 10,
+                              ),
+                              const AppContainer(
+                                  border: 40,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 20.0,
+                                        right: 20.0,
+                                        top: 12.0,
+                                        bottom: 8.0),
+                                    child: Text(
+                                      '환기가 필요합니다.',
+                                      style: TextStyle(
+                                          color: appPoint,
+                                          fontSize: fontMiddle),
+                                    ),
+                                  )),
+                              const Spacer(
+                                flex: 10,
+                              ),
+                            ],
+                          )),
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: Text("로딩 중...")),
+        ),
+      );
+    }
   }
 
   buildWeatherImage(String status) {

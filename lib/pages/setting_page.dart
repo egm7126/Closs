@@ -1,14 +1,42 @@
 import 'dart:async';
 import 'package:closs_b1/utils/app_components.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 import 'package:geolocator/geolocator.dart';
 import '../utils/appTools.dart';
+import '../utils/bt_relations/ChatPage.dart';
 import '../utils/bt_relations/SelectBondedDevicePage.dart';
 import '../utils/global_vars.dart';
 import 'bt_communication_page.dart';
 
-main(){
+bool tog = true;
+
+void updateFanOn() async {
+  try {
+    // Firestore에서 'RP' 컬렉션의 문서를 참조합니다.
+    DocumentReference documentReference = FirebaseFirestore.instance.collection('RP').doc('RaspberryPi'); // your_document_id에는 업데이트할 문서의 식별자가 들어갑니다.
+    Map<String, dynamic> data;
+    if(tog){
+      // 업데이트할 데이터를 정의합니다. 여기서는 'fanOn' 필드를 true로 업데이트합니다.
+      data = {'data': 'on'};
+      tog=false;
+    }else{
+      // 업데이트할 데이터를 정의합니다. 여기서는 'fanOn' 필드를 true로 업데이트합니다.
+      data = {'data': 'off'};
+      tog=true;
+    }
+
+    // 해당 문서의 데이터를 업데이트합니다.
+    await documentReference.update(data);
+
+    print('Fan turned on successfully!');
+  } catch (e) {
+    print('Error updating fan status: $e');
+  }
+}
+
+main() {
   runApp(const SettingTest());
 }
 
@@ -24,7 +52,6 @@ class SettingTest extends StatelessWidget {
     );
   }
 }
-
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -72,9 +99,10 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   //put to grid
-  Future<void> _getGrid() async{
+  Future<void> _getGrid() async {
     _getPastPosition();
-    grid = GridGpsConvertor.gpsToGRID(position != null ? position!.latitude: 0, position != null ? position!.longitude: 0);
+    grid = GridGpsConvertor.gpsToGRID(position != null ? position!.latitude : 0,
+        position != null ? position!.longitude : 0);
   }
 
   @override
@@ -99,7 +127,10 @@ class _SettingPageState extends State<SettingPage> {
               Expanded(
                 flex: 10,
                 child: AppWidgetButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    updateFanOn();
+                    //BackChatPage.send('@kfan@s0@con');
+                  },
                   child: Opacity(
                     opacity: fan ? 1 : 0.5,
                     child: Image.asset('assets/icon/wind.png'),
@@ -180,52 +211,57 @@ class _SettingPageState extends State<SettingPage> {
                   _getCurrentPosition();
                 },
                 text: position != null
-                    ? '${position!.latitude}, ${position!.longitude}'
+                    ? '현재 좌표 ${position!.latitude}, ${position!.longitude}'
                     : 'Loading...',
               ),
             )),
-        Expanded(
-            flex: 10,
-            child: Center(
-              child: AppContainer(
-                border: 10,
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: GeoGridText(),
-                ),
-              ),
-            )),
-        Expanded(
-            flex: 10,
-            child: Center(
-              child: AppButton(
-                onPressed: () async {
-                  final BluetoothDevice? selectedDevice =
-                      await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return SelectBondedDevicePage(
-                            checkAvailability: false);
-                      },
-                    ),
-                  );
-
-                  if (selectedDevice != null) {
-                    print('Connect -> selected ' + selectedDevice.address);
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return ChatPage(server: selectedDevice);
-                        },
-                      ),
-                    );
-                  } else {
-                    print('Connect -> no device selected');
-                  }
-                },
-                text: '블루투스 통신 내용',
-              ),
-            )),
+        // Expanded(
+        //     flex: 10,
+        //     child: Center(
+        //       child: AppContainer(
+        //         border: 10,
+        //         child: Padding(
+        //           padding: const EdgeInsets.all(10.0),
+        //           child: GeoGridText(),
+        //         ),
+        //       ),
+        //     )),
+        // Expanded(
+        //     flex: 10,
+        //     child: Center(
+        //       child: AppButton(
+        //         onPressed: () async {
+        //           final BluetoothDevice? selectedDevice =
+        //               await Navigator.of(context).push(
+        //             MaterialPageRoute(
+        //               builder: (context) {
+        //                 return SelectBondedDevicePage(checkAvailability: false);
+        //               },
+        //             ),
+        //           );
+        //
+        //           if (selectedDevice != null) {
+        //             print('Connect -> selected ' + selectedDevice.address);
+        //             Navigator.of(context).push(
+        //               MaterialPageRoute(
+        //                 builder: (context) {
+        //                   BackChatPage.setup();
+        //                   return ChatPage(server: server);
+        //                 },
+        //               ),
+        //             );
+        //           } else {
+        //             print('Connect -> no device selected');
+        //           }
+        //         },
+        //         text: '블루투스 통신 내용',
+        //       ),
+        //     )),
+        // AppButton(
+        //     onPressed: () {
+        //       BackChatPage.sendFunction('hi');
+        //     },
+        //     text: 'say hi'),
         const Spacer(
           flex: 10,
         ),

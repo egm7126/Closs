@@ -66,16 +66,11 @@ class _LoginState extends State<Login> {
 
   }
 
-  Future<void> goDashWithBond() async {
-    selectedDevice =
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) {
-          return const SelectBondedDevicePage(
-            checkAvailability: false,
-          );
-        },
-      ),
+  goDashWithBond()  {
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DashBoardPage()),
     );
 
   }

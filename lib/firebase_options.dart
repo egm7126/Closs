@@ -67,6 +67,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '445237666877',
     projectId: 'mossis-family',
     storageBucket: 'mossis-family.appspot.com',
+    iosClientId: '445237666877-50jj90d82pn1rdhdg12tq2oh67r5mk75.apps.googleusercontent.com',
     iosBundleId: 'com.example.clossB1',
   );
 
@@ -76,6 +77,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '445237666877',
     projectId: 'mossis-family',
     storageBucket: 'mossis-family.appspot.com',
+    iosClientId: '445237666877-32tkmj6li2rtq2pcevv54ha405j6ufgl.apps.googleusercontent.com',
     iosBundleId: 'com.example.clossB1.RunnerTests',
   );
 }

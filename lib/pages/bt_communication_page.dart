@@ -7,50 +7,17 @@ import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 import '../utils/app_components.dart';
 import '../utils/global_vars.dart';
 
-class ChatPage extends StatefulWidget {
-  final BluetoothDevice server;
+class BackChatPage extends StatefulWidget {
+  BackChatPage({super.key});
 
-  const ChatPage({super.key, required this.server});
+  static void setup() {
+    //server needed
 
-  @override
-  _ChatPage createState() => _ChatPage();
-}
-
-class _Message {
-  int whom;
-  String text;
-
-  _Message(this.whom, this.text);
-}
-
-class _ChatPage extends State<ChatPage> {
-  static const clientID = 0;
-  BluetoothConnection? connection;
-
-  List<_Message> messages = List<_Message>.empty(growable: true);
-  String _messageBuffer = '';
-
-  final TextEditingController textEditingController =
-      TextEditingController();
-  final ScrollController listScrollController = ScrollController();
-
-  bool isConnecting = true;
-
-  bool get isConnected => (connection?.isConnected ?? false);
-
-  bool isDisconnecting = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    BluetoothConnection.toAddress(widget.server.address).then((_connection) {
+    BluetoothConnection.toAddress(server.address).then((_connection) {
       print('Connected to the device');
       connection = _connection;
-      setState(() {
         isConnecting = false;
         isDisconnecting = false;
-      });
 
       connection!.input!.listen(_onDataReceived).onDone(() {
         // Example: Detect which side closed the connection
@@ -64,9 +31,6 @@ class _ChatPage extends State<ChatPage> {
         } else {
           print('Disconnected remotely!');
         }
-        if (mounted) {
-          setState(() {});
-        }
       });
     }).catchError((error) {
       print('Cannot connect, exception occured');
@@ -74,98 +38,32 @@ class _ChatPage extends State<ChatPage> {
     });
   }
 
-  @override
-  void dispose() {
-    // Avoid memory leak (`setState` after dispose) and disconnect
-    if (isConnected) {
-      isDisconnecting = true;
-      connection?.dispose();
-      connection = null;
+  static void sendFunction(String text)async{
+    if(connection != null || server != null){
+      if (text.length > 0) {
+        try {
+          connection!.output.add(Uint8List.fromList(utf8.encode(text + "\r\n")));
+          await connection!.output.allSent;
+        } catch (e) {}
+      }
+      print("send $text to ${server.name}");
+    }else{
+      print("connection is null");
     }
 
-    super.dispose();
+  }
+  static void send(String text)async{
+    if(connection != null || server != null){
+      setup();
+      sendFunction(text);
+    }else{
+      setup();
+      sendFunction(text);
+    }
+
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final List<Row> list = messages.map((_message) {
-      return Row(
-        mainAxisAlignment: _message.whom == clientID
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            padding: const EdgeInsets.all(12.0),
-            margin: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
-            width: 222.0,
-            decoration: BoxDecoration(
-                color:
-                    _message.whom == clientID ? Colors.blueAccent : Colors.grey,
-                borderRadius: BorderRadius.circular(7.0)),
-            child: Text(
-                (text) {
-                  return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
-                }(_message.text.trim()),
-                style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      );
-    }).toList();
-
-    final serverName = widget.server.name ?? "Unknown";
-    return Scaffold(
-      appBar: AppBar(
-          title: (isConnecting
-              ? Text('Connecting chat to $serverName...')
-              : isConnected
-                  ? Text('Live chat with $serverName')
-                  : Text('Chat log with $serverName'))),
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Flexible(
-              child: ListView(
-                  padding: const EdgeInsets.all(12.0),
-                  controller: listScrollController,
-                  children: list),
-            ),
-            Row(
-              children: <Widget>[
-                Flexible(
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 16.0),
-                    child: TextField(
-                      style: const TextStyle(fontSize: 15.0),
-                      controller: textEditingController,
-                      decoration: InputDecoration.collapsed(
-                        hintText: isConnecting
-                            ? 'Wait until connected...'
-                            : isConnected
-                                ? 'Type your message...'
-                                : 'Chat got disconnected',
-                        hintStyle: const TextStyle(color: Colors.grey),
-                      ),
-                      enabled: isConnected,
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.all(8.0),
-                  child: IconButton(
-                      icon: const Icon(Icons.send),
-                      onPressed: isConnected
-                          ? () => _sendMessage(textEditingController.text)
-                          : null),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _onDataReceived(Uint8List data) {
+  static void _onDataReceived(Uint8List data) {
     // Allocate buffer for parsed data
     int backspacesCounter = 0;
     data.forEach((byte) {
@@ -189,77 +87,68 @@ class _ChatPage extends State<ChatPage> {
         }
       }
     }
-
-    // Create message if there is new line character
-    String dataString = String.fromCharCodes(buffer);
-    int index = buffer.indexOf(13);
-
-    if (~index != 0) {
-      setState(() {
-        messages.add(
-          _Message(
-            1,
-            backspacesCounter > 0
-                ? _messageBuffer.substring(
-                    0, _messageBuffer.length - backspacesCounter)
-                : _messageBuffer + dataString.substring(0, index),
-          ),
-        );
-
-        listenData();
-        _messageBuffer = dataString.substring(index);
-
-      });
-    } else {
-      _messageBuffer = (backspacesCounter > 0
-          ? _messageBuffer.substring(
-              0, _messageBuffer.length - backspacesCounter)
-          : _messageBuffer + dataString);
-    }
   }
 
-  void _sendMessage(String text) async {
-    text = text.trim();
-    textEditingController.clear();
+  static const clientID = 0;
+  static List<_Message> messages = List<_Message>.empty(growable: true);
+  static String _messageBuffer = '';
+  static bool isConnecting = true;
+  static bool get isConnected => (connection?.isConnected ?? false);
+  static bool isDisconnecting = false;
+  static final TextEditingController textEditingController = TextEditingController();
+  static final ScrollController listScrollController = ScrollController();
 
-    if (text.length > 0) {
-      try {
-        connection!.output.add(Uint8List.fromList(utf8.encode(text + "\r\n")));
-        await connection!.output.allSent;
+  @override
+  _BackChatPage createState() => _BackChatPage();
+}
 
-        setState(() {
-          messages.add(_Message(clientID, text));
-        });
+class _Message {
+  int whom;
+  String text;
 
-        Future.delayed(Duration(milliseconds: 333)).then((_) {
-          listScrollController.animateTo(
-              listScrollController.position.maxScrollExtent,
-              duration: Duration(milliseconds: 333),
-              curve: Curves.easeOut);
-        });
-      } catch (e) {
-        // Ignore error, but notify state
-        setState(() {});
-      }
-    }
+  _Message(this.whom, this.text);
+}
+
+class _BackChatPage extends State<BackChatPage> {
+
+  @override
+  void initState() {
+    super.initState();
   }
 
-  void listenData() {
-    String containEnterString = _messageBuffer;
-    int enterIndex = containEnterString.indexOf("\n");
+  @override
+  void dispose() {
+    // Avoid memory leak (`setState` after dispose) and disconnect
+    // if (isConnected) {
+    //   isDisconnecting = true;
+    //   connection?.dispose();
+    //   connection = null;
+    // }
 
-    String pureString;
-    if (enterIndex != -1) { // If newline character found
-      pureString = containEnterString.substring(enterIndex + 1); // Extract the substring after the newline character
-    } else {
-      pureString = ""; // If no newline character found, set extractedString as empty string
-    }
-    stringReceived = pureString;
-    
-    receivedByProtocol = ClossProtocol(stringReceived);
-    
-    print("Kind: ${receivedByProtocol.kind}"); // Print the extracted kind
-    print("Serial: ${receivedByProtocol.serial}"); // Print the extracted serial
-    print("Content: ${receivedByProtocol.content}"); // Print the extracted content
+    super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text('null 방지');
+  }
+
+  // void listenData() {
+  //   String containEnterString = _messageBuffer;
+  //   int enterIndex = containEnterString.indexOf("\n");
+  //
+  //   String pureString;
+  //   if (enterIndex != -1) { // If newline character found
+  //     pureString = containEnterString.substring(enterIndex + 1); // Extract the substring after the newline character
+  //   } else {
+  //     pureString = ""; // If no newline character found, set extractedString as empty string
+  //   }
+  //   stringReceived = pureString;
+  //
+  //   receivedByProtocol = ClossProtocol(stringReceived);
+  //
+  //   print("Kind: ${receivedByProtocol.kind}"); // Print the extracted kind
+  //   print("Serial: ${receivedByProtocol.serial}"); // Print the extracted serial
+  //   print("Content: ${receivedByProtocol.content}"); // Print the extracted content
+  // }
 }

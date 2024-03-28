@@ -1,4 +1,5 @@
 import 'dart:async' show StreamSubscription;
+import 'package:closs_b1/utils/global_vars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 import '../../pages/dashboard_page.dart';
@@ -114,6 +115,7 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
               rssi: _device.rssi,
               enabled: _device.availability == _DeviceAvailability.yes,
               onTap: () {
+                server = _device.device;
                 Navigator.of(context).pop(_device.device);
                 Navigator.push(
                   context,
@@ -129,8 +131,8 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
           _isDiscovering
               ? FittedBox(
                   child: Container(
-                    margin: new EdgeInsets.all(16.0),
-                    child: CircularProgressIndicator(
+                    margin: const EdgeInsets.all(16.0),
+                    child: const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
                         Colors.white,
                       ),
@@ -138,7 +140,7 @@ class _SelectBondedDevicePage extends State<SelectBondedDevicePage> {
                   ),
                 )
               : IconButton(
-                  icon: Icon(Icons.replay),
+                  icon: const Icon(Icons.replay),
                   onPressed: _restartDiscovery,
                 )
         ],
