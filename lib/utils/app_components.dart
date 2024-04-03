@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:c1/utils/global_vars.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -260,5 +261,26 @@ class _getFireState extends State<getFire> {
         );
       },
     );
+  }
+}
+
+class AppText extends StatelessWidget {
+  const AppText(this.text, {
+    super.key,
+    this.maxLines = 1,
+    this.style = const TextStyle(),
+  });
+
+  final String text;
+  final int maxLines;
+  final TextStyle style;
+
+
+  @override
+  Widget build(BuildContext context) {
+    if(style.fontSize == null){
+      return FittedBox(child: AutoSizeText(text, maxLines: maxLines,style: style,),);
+    }
+    return Text(text, style: style,);
   }
 }

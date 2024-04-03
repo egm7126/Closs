@@ -30,7 +30,7 @@ class _SignUpState extends State<SignUp> {
       // 예를 들어, 회원가입 후 바로 로그인 페이지로 이동할 수 있습니다.
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const Login()),
+        MaterialPageRoute(builder: (context) => const LoginPage()),
       );
     } catch (e) {
       // 회원가입 실패 시 에러 처리

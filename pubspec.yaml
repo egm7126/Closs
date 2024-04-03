@@ -40,6 +40,8 @@ dependencies:
   firebase_auth: ^4.17.9
   fluttertoast: ^8.2.4
   cloud_firestore: ^4.15.10
+  shared_preferences: ^2.2.2
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:

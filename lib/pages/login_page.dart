@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/app_components.dart';
@@ -10,14 +11,14 @@ import '../utils/app_components.dart';
 import '../utils/global_vars.dart';
 import 'dashboard_page.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -32,7 +33,10 @@ class _LoginState extends State<Login> {
       appToast(msg: "회원가입에 성공했습니다.");
 
       // 회원가입 성공 시 페이지 이동 등의 처리
-     goDashBoard();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>  const DashBoardPage()),
+      );
 
     } catch (e) {
       // 회원가입 실패 시 에러 처리
@@ -44,7 +48,7 @@ class _LoginState extends State<Login> {
     }
   }
 
-  Future<void> _login() async {
+  Future<void> _signIn() async {
     try {
       UserCredential userCredential =
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -53,6 +57,9 @@ class _LoginState extends State<Login> {
       );
       appToast(msg: "로그인 되었습니다.");
 
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      await prefs.setBool('isLoggedIn', true);
 
       await Navigator.push(
         context,
@@ -162,7 +169,7 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                     TextButton(
-                      onPressed: _login,
+                      onPressed: _signIn,
                       child: Container(
                         height: 40,
                         width: 100,

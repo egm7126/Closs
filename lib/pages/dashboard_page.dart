@@ -1,18 +1,19 @@
 import 'dart:ffi';
 import 'dart:isolate';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:c1/pages/setting_page.dart';
 import 'package:c1/utils/app_colors.dart';
 import 'package:c1/utils/app_components.dart';
 import 'package:c1/utils/app_constants.dart';
 import 'package:c1/utils/global_vars.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 import '../utils/appTools.dart';
 // import '../utils/bt_relations/ChatPage.dart';
-
-
 
 class DashBoardPage extends StatefulWidget {
   const DashBoardPage({
@@ -179,69 +180,67 @@ class _DashBoardPageState extends State<DashBoardPage> {
                                 flex: 10,
                               ),
                               //presentation information
-                              SizedBox(
-                                height: 200,
-                                width: 200,
-                                child: AppContainer(
-                                  border: 10,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Spacer(
-                                        flex: 10,
-                                      ),
-                                      const ClockText(
-                                        y: true,
-                                        mth: true,
-                                        d: true,
-                                        style: TextStyle(
-                                            fontSize: fontMiddle,
-                                            fontWeight: FontWeight.w300),
-                                      ),
-                                      const ClockText(
-                                        h: true,
-                                        min: true,
-                                        style: TextStyle(
-                                            fontSize: 60,
-                                            fontFamily: 'PrettyAppFont',
-                                            fontWeight: FontWeight.bold),
-                                        displayType: ':',
-                                      ),
-                                      const Spacer(
-                                        flex: 30,
-                                      ),
-                                      //
-                                      //
-                                      // presentation weather para
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Spacer(),
-                                          Text(
-                                            '$temp°C',
-                                            style: const TextStyle(
-                                              color: appPoint,
-                                              fontSize: fontMiddleBig,
+                              Expanded(
+                                flex: 30,
+                                child: Column(
+                                  children: [
+                                    const Spacer(flex: 20,),
+                                    Expanded(
+                                      flex: 30,
+                                      child: AppContainer(
+                                        border: 10,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            //year, month, date
+                                            const Expanded(
+                                              flex: 20,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 25.0),
+                                                child: ClockText(
+                                                  y: true,
+                                                  mth: true,
+                                                  d: true,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                            '$hum%',
-                                            style: const TextStyle(
-                                              color: appPoint,
-                                              fontSize: fontMiddleBig,
+
+                                            //hour minutes
+                                            const Expanded(
+                                              flex: 20,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                                                child: ClockText(
+                                                  h: true,
+                                                  min: true,
+                                                  style: TextStyle(
+                                                      fontFamily: 'PrettyAppFont',
+                                                      fontWeight: FontWeight.bold,),
+                                                  displayType: ':',
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          const Spacer(),
-                                        ],
+
+                                            // presentation weather para
+                                            Expanded(
+                                              flex: 20,
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                                child: AppText(
+                                                  '$temp°C  $hum%',
+                                                  style: const TextStyle(
+                                                    color: appPoint,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            //Text(geoCrdText.getLocationString()),
+                                          ],
+                                        ),
                                       ),
-                                      //Text(geoCrdText.getLocationString()),
-                                      const Spacer(
-                                        flex: 10,
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    const Spacer(flex: 20,),
+                                  ],
                                 ),
                               ),
                               const Spacer(

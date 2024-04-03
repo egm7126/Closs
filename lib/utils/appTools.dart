@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 // import 'package:geolocator/geolocator.dart';
 import 'app_components.dart';
@@ -138,7 +139,7 @@ class _ClockTextState extends State<ClockText> {
         returnString = '$returnString ';//띄어쓰기
       }
       if(widget.displayType==':'){
-        returnString = ' $returnString${_currentTime.minute}';
+        returnString = '$returnString${_currentTime.minute}';
       }else{
         returnString = '$returnString${_currentTime.minute}분';
       }
@@ -150,7 +151,8 @@ class _ClockTextState extends State<ClockText> {
       }
       returnString = '$returnString${_currentTime.second}초';
     }
-    return Text(widget.frontString+returnString, style: widget.style,);
+    return AppText(widget.frontString+returnString, maxLines: 1, style: widget.style,);
+    //return Text(widget.frontString+returnString, style: widget.style,);
   }
 }
 
