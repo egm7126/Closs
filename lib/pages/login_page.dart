@@ -1,4 +1,5 @@
 import 'package:c1/pages/sign_up_page.dart';
+import 'package:c1/utils/app_constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -96,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                       width: 40,
                       height: 40,
                       child: AppContainer(
-                          border: 5,
+                          border: borderTiny,
                           child: Padding(
                             padding: EdgeInsets.all(4.0),
                             child: Icon(

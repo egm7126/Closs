@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:lottie/lottie.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
 
@@ -100,7 +101,7 @@ class AppTextField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: AppContainer(
-          border: 20,
+          border: borderMiddle,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: CupertinoTextField(
@@ -120,11 +121,15 @@ class AppButton extends StatefulWidget {
   const AppButton({
     super.key,
     required this.onPressed,
-    required this.text,
+    this.text = '',
+    this.child = const Text(''),
+    this.color = appBlue,
   });
 
   final VoidCallback onPressed;
   final String text;
+  final Widget child;
+  final Color color;
 
   @override
   State<AppButton> createState() => _AppButtonState();
@@ -134,58 +139,20 @@ class _AppButtonState extends State<AppButton> {
   @override
   Widget build(BuildContext context) {
     return AppContainer(
-      border: 20,
+      border: borderMiddle,
       child: CupertinoButton(
         onPressed: widget.onPressed,
-        color: appBlue,
+        color: widget.color,
         borderRadius: BorderRadius.circular(20.0),
         // 버튼의 모서리를 둥글게 만듭니다.
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        child: Text(
-          widget.text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: fontButtonMiddle,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: widget.text == '' ? widget.child : Text(widget.text),
       ),
     );
   }
 }
 
-class AppWidgetButton extends StatefulWidget {
-  const AppWidgetButton({
-    super.key,
-    required this.onPressed,
-    required this.child,
-  });
-
-  final Widget child;
-  final VoidCallback onPressed;
-
-  @override
-  State<AppWidgetButton> createState() => _AppWidgetButtonState();
-}
-
-class _AppWidgetButtonState extends State<AppWidgetButton> {
-  @override
-  Widget build(BuildContext context) {
-    return AppContainer(
-      border: 20,
-      child: CupertinoButton(
-        onPressed: widget.onPressed,
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20.0),
-        // 버튼의 모서리를 둥글게 만듭니다.
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-appToast({required String msg}){
+appToast({required String msg}) {
   Fluttertoast.showToast(
     msg: msg,
     toastLength: Toast.LENGTH_SHORT,
@@ -202,15 +169,16 @@ class ClossProtocol {
   String content = '';
 
   ClossProtocol(String data) {
-    RegExp regex = RegExp(r"@k(.*?)@s(.*?)@c(.*)"); // Define regular expression pattern
-    Match? match = regex.firstMatch(data); // Find the first match in the input data
+    RegExp regex =
+        RegExp(r"@k(.*?)@s(.*?)@c(.*)"); // Define regular expression pattern
+    Match? match =
+        regex.firstMatch(data); // Find the first match in the input data
 
-    if(match != null){
+    if (match != null) {
       kind = match.group(1)!; // Extract the kind
       serial = match.group(2)!; // Extract the serial
       content = match.group(3)!; // Extract the content
     }
-
   }
 }
 
@@ -218,7 +186,7 @@ class getFire extends StatefulWidget {
   @override
   _getFireState createState() => _getFireState();
 
-  static void getTemp(){
+  static void getTemp() {
     FirebaseFirestore.instance.collection("RP").snapshots().listen((snapshot) {
       if (snapshot.docs.isNotEmpty) {
         for (var document in snapshot.docs) {
@@ -232,11 +200,9 @@ class getFire extends StatefulWidget {
       }
     });
   }
-
 }
 
 class _getFireState extends State<getFire> {
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -265,7 +231,8 @@ class _getFireState extends State<getFire> {
 }
 
 class AppText extends StatelessWidget {
-  const AppText(this.text, {
+  const AppText(
+    this.text, {
     super.key,
     this.maxLines = 1,
     this.style = const TextStyle(),
@@ -275,12 +242,29 @@ class AppText extends StatelessWidget {
   final int maxLines;
   final TextStyle style;
 
+  @override
+  Widget build(BuildContext context) {
+    if (style.fontSize == null) {
+      return FittedBox(
+        child: AutoSizeText(
+          text,
+          maxLines: maxLines,
+          style: style,
+        ),
+      );
+    }
+    return Text(
+      text,
+      style: style,
+    );
+  }
+}
+
+class AppIndicator extends StatelessWidget {
+  const AppIndicator({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if(style.fontSize == null){
-      return FittedBox(child: AutoSizeText(text, maxLines: maxLines,style: style,),);
-    }
-    return Text(text, style: style,);
+    return Lottie.asset('assets/moving icon/indicator2.json');
   }
 }

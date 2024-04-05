@@ -1,9 +1,14 @@
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // import 'package:geolocator/geolocator.dart';
 import 'app_components.dart';
 import 'dart:math' as Math;
+
+import 'app_constants.dart';
+import 'global_vars.dart';
 
 class Square extends StatelessWidget {
   const Square({
@@ -436,3 +441,45 @@ skyCodeToString(int code) {
 //     );
 //   }
 // }
+
+void updateDataFirestore(String dataKind, String content) async {
+  try {
+    DocumentReference documentReference = FirebaseFirestore.instance.collection(productName).doc(productSerial);
+    Map<String, dynamic> data = {dataKind: content};
+
+    // 해당 문서의 데이터를 업데이트합니다.
+    await documentReference.update(data);
+
+    if (kDebugMode) {
+      print('update success');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('update fail: $e');
+    }
+  }
+}
+
+Future<String> readDataFirestore(String dataKind) async {
+  String returnString ='';
+  try {
+    DocumentReference documentReference = FirebaseFirestore.instance.collection(productName).doc(productSerial);
+
+    // 해당 문서의 데이터를 가져옵니다.
+    DocumentSnapshot snapshot = await documentReference.get();
+
+    // 데이터가 있는지 확인하고 문자열로 변환하여 저장합니다.
+    if (snapshot.exists && snapshot.get(dataKind) != null) {
+      returnString = snapshot.get(dataKind).toString();
+    }
+
+    if (kDebugMode) {
+      print('read success');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('read fail: $e');
+    }
+  }
+  return returnString;
+}
