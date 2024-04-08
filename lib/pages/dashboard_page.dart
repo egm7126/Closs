@@ -97,10 +97,6 @@ class _DashBoardPageState extends State<DashBoardPage>
 
   void readRecentData() {
     appPrint('readRecentData >');
-    if (recentFct != null) {
-      recentFct = loadFile('recentFctData');
-      recentNct = loadFile('recentNctData');
-    }
     for (ItemSuperFct item in recentFct.itemList) {
       setState(() {
         if (item.category == 'SKY') {
@@ -136,6 +132,23 @@ class _DashBoardPageState extends State<DashBoardPage>
       putNct2Vars();
     } catch (e) {
       readRecentData();
+    }
+  }
+
+  Widget buildWeatherImage(String status) {
+    appPrint(status);
+
+    switch (status) {
+      case 'sunny':
+        return Image.asset('assets/icon/sunny.png');
+      case 'cloudy':
+        return Image.asset('assets/icon/cloudy.png');
+      case 'rainy':
+        return Image.asset('assets/icon/rainy.png');
+      case 'lightning':
+        return Image.asset('assets/icon/lightning.png');
+      default:
+        return Image.asset('assets/icon/sunny.png');
     }
   }
 
@@ -478,23 +491,6 @@ class _DashBoardPageState extends State<DashBoardPage>
         ),
       );
     }
-  }
-}
-
-buildWeatherImage(String status) {
-  appPrint(status);
-
-  switch (status) {
-    case 'sunny':
-      return Image.asset('assets/icon/sunny.png');
-    case 'cloudy':
-      return Image.asset('assets/icon/cloudy.png');
-    case 'rainy':
-      return Image.asset('assets/icon/rainy.png');
-    case 'lightning':
-      return Image.asset('assets/icon/lightning.png');
-    default:
-      return Image.asset('assets/icon/sunny.png');
   }
 }
 

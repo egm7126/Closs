@@ -563,15 +563,15 @@ void removePrefs(String key)async{
 }
 
 void saveFile(String fileName, data)async{
-  appPrint('save file $fileName');
   String filePath = await getFilePath(fileName);
+  appPrint('save file $filePath.json');
   File file = File('$filePath.json');
   await file.writeAsString(jsonEncode(data.toJson()));
 }
 
 dynamic loadFile(String fileName)async{
-  appPrint('load file $fileName');
   String filePath = await getFilePath(fileName);
+  appPrint('load file $filePath.json');
   File file = File('$filePath.json');
   if (file.existsSync()) {
     String contents = await file.readAsString();
