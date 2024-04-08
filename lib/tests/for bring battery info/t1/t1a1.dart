@@ -37,7 +37,7 @@ class _BluetoothBatteryScreenState extends State<BluetoothBatteryScreen> {
     try {
       await bluetooth.requestEnable();
     } catch (e) {
-      print(e);
+      appPrint(e);
     }
   }
 
@@ -49,7 +49,7 @@ class _BluetoothBatteryScreenState extends State<BluetoothBatteryScreen> {
       });
       _requestBatteryInfo();
     } catch (e) {
-      print(e);
+      appPrint(e);
     }
   }
 
@@ -62,7 +62,7 @@ class _BluetoothBatteryScreenState extends State<BluetoothBatteryScreen> {
         });
       });
     } catch (e) {
-      print(e);
+      appPrint(e);
     }
   }
 

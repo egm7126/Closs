@@ -1,14 +1,18 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:geolocator/geolocator.dart';
 import 'app_components.dart';
 import 'dart:math' as Math;
 
 import 'app_constants.dart';
-import 'global_vars.dart';
+import 'global.dart';
 
 class Square extends StatelessWidget {
   const Square({
@@ -46,7 +50,7 @@ class SizeFixer extends StatelessWidget {
 }
 
 class ClockText extends StatefulWidget {
-  const ClockText({
+  ClockText({
     Key? key,
     this.frontString = '',
     this.y = false,
@@ -58,36 +62,148 @@ class ClockText extends StatefulWidget {
     this.style = const TextStyle(),
     this.displayType = ':',
     this.makePM = true,
+    this.minFontSize = 12,
+    this.onlyNumbers = false,
   }) : super(key: key);
 
   final String frontString;
-
   final bool y;
   final bool mth;
   final bool d;
   final bool h;
   final bool min;
   final bool s;
-
   final TextStyle style;
-
   final String displayType;
-
   final bool makePM;
+  final double minFontSize;
+  final bool onlyNumbers;
 
   @override
   _ClockTextState createState() => _ClockTextState();
+
+  late String returnString;
+  DateTime currentTime = DateTime.now();
+  int hour=0;
+  void makeString(){
+   returnString = '';
+   if(onlyNumbers){
+     if(y){
+       returnString = '$returnString${currentTime.year}';
+     }
+     if(mth){
+       if(returnString!=''){//if returnString is be not void, that have to contain space
+         returnString = '$returnString ';
+       }
+       returnString = '$returnString${currentTime.month}';
+     }
+     if(d){
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       returnString = '$returnString${currentTime.day}';
+     }
+     if(h){
+       hour = currentTime.hour;
+       if(makePM){
+         if(currentTime.hour>=13){
+           hour = currentTime.hour-12;
+         }
+       }
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       returnString = '$returnString$hour';
+     }
+     if(min){
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       returnString = '$returnString${currentTime.minute}';
+     }
+     if(s){
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       returnString = '$returnString${currentTime.second}';
+     }
+   }else{
+     if(y){
+       returnString = '$returnString${currentTime.year}년';
+     }
+     if(mth){
+       if(returnString!=''){//if returnString is be not void, that have to contain space
+         returnString = '$returnString ';
+       }
+       returnString = '$returnString${currentTime.month}월';
+     }
+     if(d){
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       returnString = '$returnString${currentTime.day}일';
+     }
+     if(h){
+       hour = currentTime.hour;
+       if(makePM){
+         if(currentTime.hour>=13){
+           hour = currentTime.hour-12;
+         }
+       }
+
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       if(displayType==':'){
+         returnString = '$returnString$hour :';
+       }else if(displayType=='kor'){
+         returnString = '$returnString$hour시';
+       }
+
+     }
+     if(min){
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       if(displayType==':'){
+         returnString = '$returnString${currentTime.minute}';
+       }else{
+         returnString = '$returnString${currentTime.minute}분';
+       }
+
+     }
+     if(s){
+       if(returnString!=''){
+         returnString = '$returnString ';//띄어쓰기
+       }
+       returnString = '$returnString${currentTime.second}초';
+     }
+   }
+  }
+
+  //for printString
+  String parseString() {
+    currentTime = DateTime.now();
+    makeString();
+    return frontString+returnString;
+  }
 }
 
 class _ClockTextState extends State<ClockText> {
+
   late Timer _timer;
-  late DateTime _currentTime;
 
   @override
   void initState() {
     super.initState();
-    _currentTime = DateTime.now();
+    widget.currentTime = DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), _updateTime);
+  }
+
+  void _updateTime(Timer timer) {
+    setState(() {
+      widget.currentTime = DateTime.now();
+    });
   }
 
   @override
@@ -96,67 +212,10 @@ class _ClockTextState extends State<ClockText> {
     super.dispose();
   }
 
-  void _updateTime(Timer timer) {
-    setState(() {
-      _currentTime = DateTime.now();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    String returnString='';
-    int hour=0;
-    if(widget.y){
-      returnString = '$returnString${_currentTime.year}년';
-    }
-    if(widget.mth){
-      if(returnString!=''){
-        returnString = '$returnString ';
-      }
-      returnString = '$returnString${_currentTime.month}월';
-    }
-    if(widget.d){
-      if(returnString!=''){
-        returnString = '$returnString ';//띄어쓰기
-      }
-      returnString = '$returnString${_currentTime.day}일';
-    }
-    if(widget.h){
-      hour = _currentTime.hour;
-      if(widget.makePM){
-        if(_currentTime.hour>=13){
-          hour = _currentTime.hour-12;
-        }
-      }
-
-      if(returnString!=''){
-        returnString = '$returnString ';//띄어쓰기
-      }
-      if(widget.displayType==':'){
-        returnString = '$returnString$hour :';
-      }else if(widget.displayType=='kor'){
-        returnString = '$returnString$hour시';
-      }
-
-    }
-    if(widget.min){
-      if(returnString!=''){
-        returnString = '$returnString ';//띄어쓰기
-      }
-      if(widget.displayType==':'){
-        returnString = '$returnString${_currentTime.minute}';
-      }else{
-        returnString = '$returnString${_currentTime.minute}분';
-      }
-
-    }
-    if(widget.s){
-      if(returnString!=''){
-        returnString = '$returnString ';//띄어쓰기
-      }
-      returnString = '$returnString${_currentTime.second}초';
-    }
-    return AppText(widget.frontString+returnString, maxLines: 1, style: widget.style,);
+    widget.makeString();
+    return AppText(widget.frontString+widget.returnString, maxLines: 1, style: widget.style,minFontSize: widget.minFontSize,);
     //return Text(widget.frontString+returnString, style: widget.style,);
   }
 }
@@ -450,13 +509,9 @@ void updateDataFirestore(String dataKind, String content) async {
     // 해당 문서의 데이터를 업데이트합니다.
     await documentReference.update(data);
 
-    if (kDebugMode) {
-      print('update success');
-    }
+    appPrint('update success');
   } catch (e) {
-    if (kDebugMode) {
-      print('update fail: $e');
-    }
+    appPrint('update fail: $e');
   }
 }
 
@@ -473,13 +528,61 @@ Future<String> readDataFirestore(String dataKind) async {
       returnString = snapshot.get(dataKind).toString();
     }
 
-    if (kDebugMode) {
-      print('read success');
-    }
+    appPrint('read success');
   } catch (e) {
-    if (kDebugMode) {
-      print('read fail: $e');
-    }
+    appPrint('read fail: $e');
   }
   return returnString;
+}
+
+void appPrint(String s){
+  if (kDebugMode) {
+    print(s);
+  }
+}
+
+void setPrefs(String key, String data)async{
+  // Obtain shared preferences.
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(key, data);
+}
+
+Future<String> getPrefs(String key) async{
+  // Obtain shared preferences.
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? action = prefs.getString(key);
+  appPrint(action!);
+
+  return action;
+}
+
+void removePrefs(String key)async{
+  // Obtain shared preferences.
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(key);
+}
+
+void saveFile(String fileName, data)async{
+  appPrint('save file $fileName');
+  String filePath = await getFilePath(fileName);
+  File file = File('$filePath.json');
+  await file.writeAsString(jsonEncode(data.toJson()));
+}
+
+dynamic loadFile(String fileName)async{
+  appPrint('load file $fileName');
+  String filePath = await getFilePath(fileName);
+  File file = File('$filePath.json');
+  if (file.existsSync()) {
+    String contents = await file.readAsString();
+    return RecentSuperNctData.fromJson(jsonDecode(contents));
+  }else{
+    appPrint('there are no file called $fileName');
+    return 'no file';
+  }
+}
+
+Future<String> getFilePath(String fileName) async {
+  final directory = await getApplicationDocumentsDirectory();
+  return '${directory.path}/$fileName';
 }

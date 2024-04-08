@@ -6,3 +6,4 @@ const Color appBackGrey = CupertinoColors.systemGrey6;
 const Color appPoint = appBlue;
 const Color appBlue = Color.fromRGBO(0, 122, 255, 1);
 const Color fontGrey = CupertinoColors.systemGrey;
+const Color textFieldGrey = Color.fromRGBO(227, 227, 232, 1);

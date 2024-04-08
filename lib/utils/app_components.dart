@@ -1,5 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:c1/utils/global_vars.dart';
+import 'package:c1/utils/global.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,9 +12,11 @@ class AppPage extends StatefulWidget {
   const AppPage({
     super.key,
     required this.child,
+    this.backgroundColor = appBackWhite,
   });
 
   final Widget child;
+  final Color backgroundColor;
 
   @override
   State<AppPage> createState() => _AppPageState();
@@ -40,7 +42,7 @@ class _AppPageState extends State<AppPage> {
           ),
         ),
         colorSchemeSeed: Colors.white,
-        scaffoldBackgroundColor: appBackWhite,
+        scaffoldBackgroundColor: widget.backgroundColor,
       ),
       home: Scaffold(
         body: SafeArea(
@@ -58,21 +60,23 @@ class AppContainer extends StatelessWidget {
   const AppContainer({
     super.key,
     required this.child,
-    required this.border,
+    this.border = 10,
+    this.color = Colors.white,
   });
 
   final Widget child;
   final double border;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color,
         borderRadius: BorderRadius.circular(border),
         boxShadow: [
           BoxShadow(
-            color: appPoint.withOpacity(0.08),
+            color: color == Colors.white ? appPoint.withOpacity(0.08) : appPoint.withOpacity(0.00),
             spreadRadius: 2,
             blurRadius: 7,
             offset: const Offset(0, 3), // 변경된 위치에 그림자 효과 적용
@@ -90,11 +94,13 @@ class AppTextField extends StatelessWidget {
     required this.text,
     required this.controller,
     this.textHiding = false,
+    this.backgroundColor = Colors.white,
   });
 
   final String text;
   TextEditingController controller = TextEditingController();
   final bool textHiding;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +108,7 @@ class AppTextField extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: AppContainer(
           border: borderMiddle,
+          color: backgroundColor,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: CupertinoTextField(
@@ -109,6 +116,7 @@ class AppTextField extends StatelessWidget {
               controller: controller,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
+                color: backgroundColor
               ),
               obscureText: textHiding,
             ),
@@ -182,65 +190,19 @@ class ClossProtocol {
   }
 }
 
-class getFire extends StatefulWidget {
-  @override
-  _getFireState createState() => _getFireState();
-
-  static void getTemp() {
-    FirebaseFirestore.instance.collection("RP").snapshots().listen((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        for (var document in snapshot.docs) {
-          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-          print(data);
-          temp = data.toString();
-          // 여기서 데이터 처리를 할 수 있습니다.
-        }
-      } else {
-        print('No Data Available');
-      }
-    });
-  }
-}
-
-class _getFireState extends State<getFire> {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection("RP").snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No Data Available'));
-        }
-
-        return ListView(
-          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-            print(data);
-            return Text('hi');
-          }).toList(),
-        );
-      },
-    );
-  }
-}
-
 class AppText extends StatelessWidget {
   const AppText(
     this.text, {
     super.key,
     this.maxLines = 1,
     this.style = const TextStyle(),
+    this.minFontSize = 12,
   });
 
   final String text;
   final int maxLines;
   final TextStyle style;
+  final double minFontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -249,6 +211,7 @@ class AppText extends StatelessWidget {
         child: AutoSizeText(
           text,
           maxLines: maxLines,
+          minFontSize: minFontSize,
           style: style,
         ),
       );
@@ -265,6 +228,6 @@ class AppIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Lottie.asset('assets/moving icon/indicator2.json');
+    return Lottie.asset('assets/moving icon/indicatorBlueCircle.json');
   }
 }

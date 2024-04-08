@@ -6,10 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/appTools.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_components.dart';
 // import '../utils/bt_relations/SelectBondedDevicePage.dart';
-import '../utils/global_vars.dart';
+import '../utils/global.dart';
 import 'dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -44,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
       // 회원가입 성공 시 토스트 알림 표시
       appToast(msg: "회원가입에 실패했습니다.");
 
-      print("Failed to sign up with email and password: $e");
+      appPrint("Failed to sign up with email and password: $e");
       // 에러를 사용자에게 표시하거나 다른 처리를 수행할 수 있습니다.
     }
   }
@@ -69,9 +70,9 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       // 로그인 실패 시 에러 처리
       appToast(msg: "로그인에 실패했습니다.");
-      if (kDebugMode) {
-        print("Failed to sign in with email and password: $e");
-      }
+
+      appPrint("Failed to sign in with email and password: $e");
+
       // 에러를 사용자에게 표시하거나 다른 처리를 수행할 수 있습니다.
     }
 

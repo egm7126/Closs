@@ -5,7 +5,7 @@
 // import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
 //
 // import '../utils/app_components.dart';
-// import '../utils/global_vars.dart';
+// import '../utils/global.dart';
 //
 // class BackChatPage extends StatefulWidget {
 //   BackChatPage({super.key});

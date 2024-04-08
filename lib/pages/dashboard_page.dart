@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:isolate';
@@ -6,7 +8,7 @@ import 'package:c1/pages/setting_page.dart';
 import 'package:c1/utils/app_colors.dart';
 import 'package:c1/utils/app_components.dart';
 import 'package:c1/utils/app_constants.dart';
-import 'package:c1/utils/global_vars.dart';
+import 'package:c1/utils/global.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -14,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/appTools.dart';
 // import '../utils/bt_relations/ChatPage.dart';
 
@@ -28,67 +31,43 @@ class DashBoardPage extends StatefulWidget {
 
 class _DashBoardPageState extends State<DashBoardPage>
     with SingleTickerProviderStateMixin {
-
-  ///weather relations
-  late Future<List<ItemSuperNct>> superNctItems; //날씨 데이터 행렬을 받을 녀석
-  late Future<List<ItemSuperFct>> superFctItems;
-
-  ///funiture relations
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  //for weahter
   String rainIndex = '';
   String skyForecast = '';
 
-  String innerCondition = '';
-
-  late AnimationController _fanAniController;
-
-  late StreamSubscription<DocumentSnapshot> _subscriptionFirebase;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _fanAniController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
+  Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
+    final weather = Weather(
+      serviceKey: weatherApiKey,
+      pageNo: 1,
+      numOfRows: 100,
+      nx: CoordLon,
+      ny: CoordLat,
     );
+    final List<ItemSuperNct> items = [];
+    final json =
+        await SuperNctRepositoryImp(isLog: isLog).getItemListJSON(weather);
+    json.map((e) => setState(() => items.add(e))).toList();
 
-    _subscriptionFirebase = FirebaseFirestore.instance
-        .collection(productName)
-        .doc(productSerial)
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.exists) {
-        setState(() {
-          // 'temp' 필드가 변경되었을 때 UI를 업데이트합니다.
-          temp = snapshot.data()?['temp'].toString() ?? 'No Data';
-          hum = snapshot.data()?['hum'].toString() ?? 'No Data';
-          fan = snapshot.data()?['fan'].toString() ?? 'No Data';
-        });
-      }
-    });
+    return items;
+  }
 
-    ///weather relations
-    //카테고리별 날씨데이터 행렬을 받기
-    superNctItems = getSuperNctListJson();
-    superFctItems = getSuperFctListJson();
+  Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
+    final weather = Weather(
+      serviceKey: weatherApiKey,
+      pageNo: 1,
+      numOfRows: 100,
+      nx: CoordLon,
+      ny: CoordLat,
+    );
+    final List<ItemSuperFct> items = [];
+    final json =
+        await SuperFctRepositoryImp(isLog: isLog).getItemListJSON(weather);
+    json.map((e) => setState(() => items.add(e))).toList();
 
-    // getItemNctListJson
-    superNctItems.then((items) {
-      for (ItemSuperNct item in items) {
-        setState(() {
-          if (item.category == 'REH') {
-            hum = item.obsrValue!;
-          } else if (item.category == 'T1H') {
-            temp = item.obsrValue!;
-          } else if (item.category == 'PTY') {
-            rainIndex = rainCodeToString(int.parse(item.obsrValue ?? '0'));
-          }
-        });
-      }
-    });
+    return items;
+  }
 
-    // getItemFctListJson
+  void putFct2Vars() {
     superFctItems.then((items) {
       for (ItemSuperFct item in items) {
         setState(() {
@@ -100,50 +79,74 @@ class _DashBoardPageState extends State<DashBoardPage>
     });
   }
 
-  @override
-  void dispose() {
-    _fanAniController.dispose();
-    _subscriptionFirebase.cancel();
-    super.dispose();
+  void putNct2Vars() {
+    superNctItems.then((items) {
+      for (ItemSuperNct item in items) {
+        setState(() {
+          if (item.category == 'REH') {
+            outerHum = item.obsrValue!;
+          } else if (item.category == 'T1H') {
+            outerTemp = item.obsrValue!;
+          } else if (item.category == 'PTY') {
+            rainIndex = rainCodeToString(int.parse(item.obsrValue ?? '0'));
+          }
+        });
+      }
+    });
   }
 
-  //return item list(여러 category의 data를 돌려줌)
-  Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
-    final weather = Weather(
-      serviceKey: weatherApiKey,
-      pageNo: 1,
-      numOfRows: 100,
-      nx: nx,
-      ny: ny,
-    );
-    final List<ItemSuperNct> items = [];
-    final json =
-        await SuperNctRepositoryImp(isLog: isLog).getItemListJSON(weather);
-
-    json.map((e) => setState(() => items.add(e))).toList();
-
-    return items;
-  } //#todo 너무 오랫동안 안불러와질때 대처
-
-  Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
-    final weather = Weather(
-      serviceKey: weatherApiKey,
-      pageNo: 1,
-      numOfRows: 100,
-      nx: nx,
-      ny: ny,
-    );
-
-    final List<ItemSuperFct> items = [];
-
-    final json =
-        await SuperFctRepositoryImp(isLog: isLog).getItemListJSON(weather);
-
-    json.map((e) => setState(() => items.add(e))).toList();
-
-    return items;
+  void readRecentData() {
+    appPrint('readRecentData >');
+    if (recentFct != null) {
+      recentFct = loadFile('recentFctData');
+      recentNct = loadFile('recentNctData');
+    }
+    for (ItemSuperFct item in recentFct.itemList) {
+      setState(() {
+        if (item.category == 'SKY') {
+          skyForecast = item.fcstValue!;
+        }
+      });
+    }
+    for (ItemSuperNct item in recentNct.itemList) {
+      setState(() {
+        if (item.category == 'REH') {
+          outerHum = item.obsrValue!;
+        } else if (item.category == 'T1H') {
+          outerTemp = item.obsrValue!;
+        } else if (item.category == 'PTY') {
+          rainIndex = rainCodeToString(int.parse(item.obsrValue ?? '0'));
+        }
+      });
+    }
   }
 
+  void setWeatherData() async {
+    appPrint('setWeatherData >');
+    try {
+      superFctItems = getSuperFctListJson();
+      superNctItems = getSuperNctListJson();
+      List<ItemSuperFct> gotFct = await superFctItems;
+      List<ItemSuperNct> gotNct = await superNctItems;
+      recentFct = RecentSuperFctData(gotFct, DateTime.now());
+      recentNct = RecentSuperNctData(gotNct, DateTime.now());
+      saveFile('recentFctData', recentFct);
+      saveFile('recentNctData', recentNct);
+      putFct2Vars();
+      putNct2Vars();
+    } catch (e) {
+      readRecentData();
+    }
+  }
+
+  //for innerCondition
+  String innerCondition = '';
+
+  //for control
+  late AnimationController _fanAniController; //for fan animation
+  late StreamSubscription<DocumentSnapshot>
+      _subscriptionFirebase; //for read firebase
+  bool showAppIndicator = true; //for app loading
   void playFan() {
     _fanAniController.repeat(
       min: 17 / 60, // 반복을 시작할 위치 (0.0은 처음부터 시작)
@@ -157,8 +160,65 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Timer 설정: 30초 후에 AppIndicator를 숨김
+    Timer(const Duration(seconds: 20), () {
+      setState(() {
+        showAppIndicator = false;
+      });
+    });
+
+    try {
+      recentFct = loadFile('recentFctData');
+      recentNct = loadFile('recentNctData');
+      DateTime now = DateTime.now();
+      if (recentFct.time.add(const Duration(minutes: 30)).isBefore(now)) {
+        //만약 최근 데이터 시간값의 30분을 더해도 현재보다 더 이전이라면
+        //when too old data
+        setWeatherData();
+      } else {
+        readRecentData();
+      }
+    } catch (e) {
+      setWeatherData();
+    }
+
+    //for control
+    _fanAniController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
+    _subscriptionFirebase = FirebaseFirestore.instance
+        .collection(productName)
+        .doc(productSerial)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        setState(() {
+          // 'temp' 필드가 변경되었을 때 UI를 업데이트합니다.
+          innerTemp = snapshot.data()?['temp'].toString() ?? 'No Data';
+          innerHum = snapshot.data()?['hum'].toString() ?? 'No Data';
+          fan = snapshot.data()?['fan'].toString() ?? 'No Data';
+        });
+      }
+    });
+    if (fan == 'on') {
+      playFan();
+    } else {
+      pauseFan();
+    }
+  }
+
+  @override
+  void dispose() {
+    _fanAniController.dispose();
+    _subscriptionFirebase.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    getFire.getTemp();
     try {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -193,21 +253,16 @@ class _DashBoardPageState extends State<DashBoardPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Spacer(
-                                flex: 10,
-                              ),
                               //weather sign
                               Expanded(
-                                flex: 60,
-                                child: buildWeatherImage(skyCodeToString(int.parse(
-                                    skyForecast))), //buildWeatherImage(rainIndex),
-                              ),
-                              const Spacer(
                                 flex: 10,
+                                child: buildWeatherImage(
+                                    skyCodeToString(int.parse(skyForecast))),
                               ),
-                              //presentation information
+
+                              //presentation weather information
                               Expanded(
-                                flex: 30,
+                                flex: 10,
                                 child: Column(
                                   children: [
                                     const Spacer(
@@ -222,11 +277,12 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               MainAxisAlignment.center,
                                           children: [
                                             //year, month, date
-                                            const Expanded(
-                                              flex: 20,
+                                            Expanded(
+                                              flex: 10,
                                               child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 25.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 25.0),
                                                 child: ClockText(
                                                   y: true,
                                                   mth: true,
@@ -235,8 +291,8 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               ),
                                             ),
 
-                                            //hour minutes
-                                            const Expanded(
+                                            //hour, minutes
+                                            Expanded(
                                               flex: 20,
                                               child: Padding(
                                                 padding: EdgeInsets.symmetric(
@@ -253,18 +309,19 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               ),
                                             ),
 
-                                            // presentation weather para
+                                            // presentation weather temp, hum
                                             Expanded(
-                                              flex: 20,
+                                              flex: 10,
                                               child: Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
                                                         horizontal: 20.0),
                                                 child: AppText(
-                                                  '$temp°C  $hum%',
+                                                  '$outerTemp°C  $outerHum%',
                                                   style: const TextStyle(
                                                     color: appPoint,
                                                   ),
+                                                  minFontSize: 30,
                                                 ),
                                               ),
                                             ),
@@ -278,9 +335,6 @@ class _DashBoardPageState extends State<DashBoardPage>
                                     ),
                                   ],
                                 ),
-                              ),
-                              const Spacer(
-                                flex: 10,
                               ),
                             ],
                           ),
@@ -338,10 +392,27 @@ class _DashBoardPageState extends State<DashBoardPage>
                               //온도 습도
                               Expanded(
                                 flex: 15,
-                                child: _SettingButton(
-                                  index: '온도 습도',
-                                  value: '$temp도 $hum%',
+                                child: Row(
+                                  children: [
+                                    const Spacer(
+                                      flex: 10,
+                                    ),
+                                    Expanded(
+                                      flex: 15,
+                                      child: _SettingButton(
+                                        index: '온도 습도',
+                                        value: '$innerTemp°C $innerHum%',
+                                        textStyle: TextStyle(color: appBlue),
+                                      ),
+                                    ),
+                                    const Spacer(
+                                      flex: 10,
+                                    ),
+                                  ],
                                 ),
+                              ),
+                              const Spacer(
+                                flex: 10,
                               ),
                               //fan
                               Expanded(
@@ -351,14 +422,15 @@ class _DashBoardPageState extends State<DashBoardPage>
                                       const Spacer(
                                         flex: 10,
                                       ),
+                                      //fan button
                                       Expanded(
-                                        flex: 20,
+                                        flex: 10,
                                         child: AppButton(
                                           onPressed: () {
-                                            if(fan=='off'){
+                                            if (fan == 'off') {
                                               updateDataFirestore('fan', 'on');
                                               playFan();
-                                            }else if(fan=='on'){
+                                            } else if (fan == 'on') {
                                               updateDataFirestore('fan', 'off');
                                               pauseFan();
                                             }
@@ -370,28 +442,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                               onLoaded: (composition) {}),
                                         ),
                                       ),
-                                      const Spacer(
-                                        flex: 10,
-                                      ),
-                                      Expanded(
-                                        flex: 20,
-                                        child: AppContainer(
-                                          border: borderMiddle,
-                                          child: innerCondition == 'good'
-                                              ? Lottie.asset(
-                                                  'assets/moving icon/good.json')
-                                              : innerCondition == 'bad'
-                                                  ? Lottie.asset(
-                                                      'assets/moving icon/bad.json')
-                                                  : Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              40.0),
-                                                      child: Lottie.asset(
-                                                          'assets/moving icon/indicator3.json'),
-                                                    ),
-                                        ),
-                                      ),
+
                                       const Spacer(
                                         flex: 10,
                                       ),
@@ -411,10 +462,19 @@ class _DashBoardPageState extends State<DashBoardPage>
         ),
       );
     } catch (e) {
-      return const MaterialApp(
+      appPrint(e.toString());
+      return MaterialApp(
         home: Scaffold(
           body: Center(
-              child: SizedBox(height: 300, width: 300, child: AppIndicator())),
+              child: showAppIndicator
+                  ? const SizedBox(
+                      height: 300, width: 300, child: AppIndicator())
+                  : const AppContainer(
+                      border: borderMiddle,
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: AppText('날씨 정보를 불러올 수 없습니다. '),
+                      ))),
         ),
       );
     }
@@ -422,9 +482,7 @@ class _DashBoardPageState extends State<DashBoardPage>
 }
 
 buildWeatherImage(String status) {
-  if (kDebugMode) {
-    print(status);
-  }
+  appPrint(status);
 
   switch (status) {
     case 'sunny':
@@ -444,10 +502,12 @@ class _SettingButton extends StatelessWidget {
   const _SettingButton({
     required this.index,
     required this.value,
+    this.textStyle = const TextStyle(),
   });
 
   final String index;
   final String value;
+  final TextStyle textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -460,21 +520,28 @@ class _SettingButton extends StatelessWidget {
       },
       child: AppContainer(
         border: borderMiddle,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 50.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                index,
-                style: const TextStyle(fontSize: fontMiddle),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 14,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppText(
+                    index,
+                    //style: textStyle,
+                    minFontSize: fontMiddleBig,
+                  ),
+                  AppText(
+                    value,
+                    style: textStyle,
+                    minFontSize: fontMiddle,
+                  ),
+                ],
               ),
-              Text(
-                value,
-                style: const TextStyle(fontSize: fontMiddle),
-              ),
-            ],
-          ),
+            ),
+            Expanded(flex: 10, child: ResultAnaylze()),
+          ],
         ),
       ),
     );
@@ -569,4 +636,16 @@ class OtherCityCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget ResultAnaylze() {
+  Widget returnWidget =
+      Lottie.asset('assets/moving icon/indicatorGreenBars.json');
+  if (double.parse(innerHum) <= 50) {
+    //returnWidget = Lottie.asset('assets/moving icon/good.json');
+    returnWidget = SizedBox(height: 250, child: AppText("😊"));
+  } else {
+    returnWidget = Lottie.asset('assets/moving icon/bad.json');
+  }
+  return returnWidget;
 }

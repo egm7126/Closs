@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../utils/appTools.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_components.dart';
 import 'login_page.dart';
@@ -37,7 +38,7 @@ class _SignUpState extends State<SignUp> {
       // 회원가입 성공 시 토스트 알림 표시
       appToast(msg: "회원가입에 실패했습니다.");
 
-      print("Failed to sign up with email and password: $e");
+      appPrint("Failed to sign up with email and password: $e");
       // 에러를 사용자에게 표시하거나 다른 처리를 수행할 수 있습니다.
     }
   }
