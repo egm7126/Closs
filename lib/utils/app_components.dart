@@ -132,12 +132,16 @@ class AppButton extends StatefulWidget {
     this.text = '',
     this.child = const Text(''),
     this.color = appBlue,
+    this.width = 0,
+    this.height = 0,
   });
 
   final VoidCallback onPressed;
   final String text;
   final Widget child;
   final Color color;
+  final double width;
+  final double height;
 
   @override
   State<AppButton> createState() => _AppButtonState();
@@ -146,17 +150,35 @@ class AppButton extends StatefulWidget {
 class _AppButtonState extends State<AppButton> {
   @override
   Widget build(BuildContext context) {
-    return AppContainer(
-      border: borderMiddle,
-      child: CupertinoButton(
-        onPressed: widget.onPressed,
-        color: widget.color,
-        borderRadius: BorderRadius.circular(20.0),
-        // 버튼의 모서리를 둥글게 만듭니다.
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        child: widget.text == '' ? widget.child : Text(widget.text),
+    return Center(
+      child: AppContainer(
+        border: borderMiddle,
+        child: CupertinoButton(
+          onPressed: widget.onPressed,
+          color: widget.color,
+          borderRadius: BorderRadius.circular(20.0),
+          // 버튼의 모서리를 둥글게 만듭니다.
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          child: buildChild(),
+        ),
       ),
     );
+  }
+
+  Widget buildChild() {
+    if(widget.text==''){
+      return widget.child;
+    }else{
+      Widget returnWidget;
+      if(widget.width>0){
+        returnWidget = SizedBox(width: widget.width, child: Center(child: Text(widget.text)),);
+      }else if(widget.height>0) {
+        returnWidget = SizedBox(height: widget.height, child: Center(child: Text(widget.text)),);
+      }else{
+        returnWidget = Center(child: Text(widget.text));
+      }
+      return returnWidget;
+    }
   }
 }
 

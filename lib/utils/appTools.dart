@@ -501,14 +501,24 @@ skyCodeToString(int code) {
 //   }
 // }
 
+void commitBatchFirestore(List<Map<String, String>> data)async{
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  WriteBatch batch = firestore.batch();
+  final docRef = firestore.collection(productName).doc(productSerial);
+
+  //batch에 add
+  for (Map<String, String> item in data) {
+    batch.update(docRef, item);
+  }
+  //한번에 commit
+  await batch.commit();
+}
+
 void updateDataFirestore(String dataKind, String content) async {
   try {
-    DocumentReference documentReference = FirebaseFirestore.instance.collection(productName).doc(productSerial);
-    Map<String, dynamic> data = {dataKind: content};
-
-    // 해당 문서의 데이터를 업데이트합니다.
-    await documentReference.update(data);
-
+      DocumentReference documentReference = FirebaseFirestore.instance.collection(productName).doc(productSerial);
+      Map<String, String> data = {dataKind: content};
+      await documentReference.update(data);
     appPrint('update success');
   } catch (e) {
     appPrint('update fail: $e');
@@ -564,22 +574,39 @@ void removePrefs(String key)async{
 
 void saveFile(String fileName, data)async{
   String filePath = await getFilePath(fileName);
-  appPrint('save file $filePath.json');
   File file = File('$filePath.json');
-  await file.writeAsString(jsonEncode(data.toJson()));
+  try{
+    await file.writeAsString(jsonEncode(data.toJson()));
+    appPrint('success saving file $filePath.json');
+  }catch (e) {
+    appPrint('fail saving file $filePath.json');
+  }
 }
 
-dynamic loadFile(String fileName)async{
+dynamic loadFile(String fileName, String caller)async{
   String filePath = await getFilePath(fileName);
-  appPrint('load file $filePath.json');
   File file = File('$filePath.json');
-  if (file.existsSync()) {
-    String contents = await file.readAsString();
-    return RecentSuperNctData.fromJson(jsonDecode(contents));
-  }else{
-    appPrint('there are no file called $fileName');
-    return 'no file';
+  Object returnVar;
+  try{
+    if (file.existsSync()) {
+      String contents = await file.readAsString();
+      if(caller=='fct'){
+        returnVar =  RecentSuperFctData.fromJson(jsonDecode(contents));
+      }else if(caller=='nct'){
+        returnVar =  RecentSuperNctData.fromJson(jsonDecode(contents));
+      }else{
+        returnVar = 'wrong caller file';
+      }
+    }else{
+      appPrint('there are no file called $fileName');
+      returnVar =  'no file';
+    }
+    appPrint('success load file $filePath.json');
+    return returnVar;
+  }catch (e){
+    appPrint('fail load file $filePath.json');
   }
+
 }
 
 Future<String> getFilePath(String fileName) async {

@@ -10,8 +10,10 @@ String outerHum = '';
 String outerTemp = '';
 String fan = '';
 
-String settingHum='';
-String settingTemp='';
+String goodLowHum='';
+String goodLowTemp='';
+String goodHighHum='';
+String goodHighTemp='';
 
 bool isWeatherUpdated = false;
 

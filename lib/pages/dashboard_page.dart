@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:isolate';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:c1/pages/setting_page.dart';
@@ -36,6 +35,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   String skyForecast = '';
 
   Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
+    appPrint('getSuperNctListJson >');
     final weather = Weather(
       serviceKey: weatherApiKey,
       pageNo: 1,
@@ -50,8 +50,8 @@ class _DashBoardPageState extends State<DashBoardPage>
 
     return items;
   }
-
   Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
+    appPrint('getSuperFctListJson >');
     final weather = Weather(
       serviceKey: weatherApiKey,
       pageNo: 1,
@@ -67,35 +67,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     return items;
   }
 
-  void putFct2Vars() {
-    superFctItems.then((items) {
-      for (ItemSuperFct item in items) {
-        setState(() {
-          if (item.category == 'SKY') {
-            skyForecast = item.fcstValue!;
-          }
-        });
-      }
-    });
-  }
-
-  void putNct2Vars() {
-    superNctItems.then((items) {
-      for (ItemSuperNct item in items) {
-        setState(() {
-          if (item.category == 'REH') {
-            outerHum = item.obsrValue!;
-          } else if (item.category == 'T1H') {
-            outerTemp = item.obsrValue!;
-          } else if (item.category == 'PTY') {
-            rainIndex = rainCodeToString(int.parse(item.obsrValue ?? '0'));
-          }
-        });
-      }
-    });
-  }
-
-  void readRecentData() {
+  void buildFromRecentData() {
     appPrint('readRecentData >');
     for (ItemSuperFct item in recentFct.itemList) {
       setState(() {
@@ -128,10 +100,27 @@ class _DashBoardPageState extends State<DashBoardPage>
       recentNct = RecentSuperNctData(gotNct, DateTime.now());
       saveFile('recentFctData', recentFct);
       saveFile('recentNctData', recentNct);
-      putFct2Vars();
-      putNct2Vars();
     } catch (e) {
-      readRecentData();
+      appPrint('$e');
+    }
+    buildFromRecentData();
+  }
+
+  void loadWeatherData() async{
+    try {
+      recentFct = await loadFile('recentFctData', 'fct');
+      recentNct = await loadFile('recentNctData', 'nct');
+      DateTime now = DateTime.now();
+      if (recentFct.time.add(const Duration(minutes: 30)).isBefore(now)) {
+        //만약 최근 데이터 시간값의 30분을 더해도 현재보다 더 이전이라면
+        //when too old data
+        appPrint('call new weather data because recent data is too old');
+        setWeatherData();
+      } else {
+        buildFromRecentData();
+      }
+    } catch (e) {
+      appPrint('$e at loadWeatherData');
     }
   }
 
@@ -152,9 +141,6 @@ class _DashBoardPageState extends State<DashBoardPage>
     }
   }
 
-  //for innerCondition
-  String innerCondition = '';
-
   //for control
   late AnimationController _fanAniController; //for fan animation
   late StreamSubscription<DocumentSnapshot>
@@ -167,7 +153,6 @@ class _DashBoardPageState extends State<DashBoardPage>
       period: const Duration(milliseconds: 500), // 반복할 구간의 시간 설정
     );
   }
-
   void pauseFan() {
     _fanAniController.stop(); // 현재 프레임에서 멈춥니다.
   }
@@ -182,20 +167,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       });
     });
 
-    try {
-      recentFct = loadFile('recentFctData');
-      recentNct = loadFile('recentNctData');
-      DateTime now = DateTime.now();
-      if (recentFct.time.add(const Duration(minutes: 30)).isBefore(now)) {
-        //만약 최근 데이터 시간값의 30분을 더해도 현재보다 더 이전이라면
-        //when too old data
-        setWeatherData();
-      } else {
-        readRecentData();
-      }
-    } catch (e) {
-      setWeatherData();
-    }
+    loadWeatherData();
 
     //for control
     _fanAniController = AnimationController(
@@ -393,8 +365,9 @@ class _DashBoardPageState extends State<DashBoardPage>
                           child: Column(
                             children: [
                               const Spacer(
-                                flex: 10,
+                                flex: 5,
                               ),
+                              //title
                               const Expanded(
                                 flex: 10,
                                 child: Text(
@@ -402,22 +375,65 @@ class _DashBoardPageState extends State<DashBoardPage>
                                   style: TextStyle(fontSize: fontMiddleBig),
                                 ),
                               ),
-                              //온도 습도
+                              //contents
                               Expanded(
-                                flex: 15,
+                                flex: 50,
                                 child: Row(
                                   children: [
                                     const Spacer(
                                       flex: 10,
                                     ),
+                                    //온도 습도
                                     Expanded(
-                                      flex: 15,
-                                      child: _SettingButton(
-                                        index: '온도 습도',
-                                        value: '$innerTemp°C $innerHum%',
-                                        textStyle: TextStyle(color: appBlue),
+                                      flex: 50,
+                                      child: Column(
+                                        children: [
+                                          const Spacer(
+                                            flex: 10,
+                                          ),
+                                          Expanded(
+                                            flex: 10,
+                                            child: _SettingButton(
+                                              index: '온도 습도',
+                                              value: '$innerTemp°C $innerHum%',
+                                              textStyle:
+                                                  TextStyle(color: appBlue),
+                                            ),
+                                          ),
+                                          const Spacer(
+                                            flex: 10,
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    const Spacer(
+                                      flex: 10,
+                                    ),
+                                    //fan
+                                    Expanded(
+                                        flex: 30,
+                                        child: Column(
+                                          children: [
+                                            const Spacer(flex: 10,),
+                                            Expanded(
+                                              flex: 10,
+                                              child: AppButton(
+                                                onPressed: () {
+                                                  if (fan == 'off') {
+                                                    updateDataFirestore('fan', 'on');
+                                                    playFan();
+                                                  } else if (fan == 'on') {
+                                                    updateDataFirestore('fan', 'off');
+                                                    pauseFan();
+                                                  }
+                                                },
+                                                color: Colors.transparent,
+                                                child: FanWidget(aniController: _fanAniController,),
+                                              ),
+                                            ),
+                                            const Spacer(flex: 10,),
+                                          ],
+                                        )),
                                     const Spacer(
                                       flex: 10,
                                     ),
@@ -425,44 +441,7 @@ class _DashBoardPageState extends State<DashBoardPage>
                                 ),
                               ),
                               const Spacer(
-                                flex: 10,
-                              ),
-                              //fan
-                              Expanded(
-                                  flex: 30,
-                                  child: Row(
-                                    children: [
-                                      const Spacer(
-                                        flex: 10,
-                                      ),
-                                      //fan button
-                                      Expanded(
-                                        flex: 10,
-                                        child: AppButton(
-                                          onPressed: () {
-                                            if (fan == 'off') {
-                                              updateDataFirestore('fan', 'on');
-                                              playFan();
-                                            } else if (fan == 'on') {
-                                              updateDataFirestore('fan', 'off');
-                                              pauseFan();
-                                            }
-                                          },
-                                          color: Colors.transparent,
-                                          child: Lottie.asset(
-                                              'assets/moving icon/fan.json',
-                                              controller: _fanAniController,
-                                              onLoaded: (composition) {}),
-                                        ),
-                                      ),
-
-                                      const Spacer(
-                                        flex: 10,
-                                      ),
-                                    ],
-                                  )),
-                              const Spacer(
-                                flex: 10,
+                                flex: 5,
                               ),
                             ],
                           )),
@@ -494,7 +473,27 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 }
 
-class _SettingButton extends StatelessWidget {
+class FanWidget extends StatefulWidget {
+  const FanWidget({
+    super.key,
+    required this.aniController,
+  });
+
+  final aniController;
+
+  @override
+  State<FanWidget> createState() => _FanWidgetState();
+}
+
+class _FanWidgetState extends State<FanWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return Lottie.asset('assets/moving icon/fan.json',
+        controller: widget.aniController, onLoaded: (composition) {});
+  }
+}
+
+class _SettingButton extends StatefulWidget {
   const _SettingButton({
     required this.index,
     required this.value,
@@ -504,6 +503,16 @@ class _SettingButton extends StatelessWidget {
   final String index;
   final String value;
   final TextStyle textStyle;
+
+  @override
+  State<_SettingButton> createState() => _SettingButtonState();
+}
+
+class _SettingButtonState extends State<_SettingButton> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -524,25 +533,78 @@ class _SettingButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AppText(
-                    index,
+                    widget.index,
                     //style: textStyle,
                     minFontSize: fontMiddleBig,
                   ),
                   AppText(
-                    value,
-                    style: textStyle,
+                    widget.value,
+                    style: widget.textStyle,
                     minFontSize: fontMiddle,
                   ),
                 ],
               ),
             ),
-            Expanded(flex: 10, child: ResultAnaylze()),
+            const Expanded(flex: 10, child: ResultAnalyze()),
           ],
         ),
       ),
     );
   }
 }
+
+class ResultAnalyze extends StatefulWidget {
+  const ResultAnalyze({
+    super.key,
+  });
+
+  @override
+  State<ResultAnalyze> createState() => _ResultAnalyzeState();
+}
+
+class _ResultAnalyzeState extends State<ResultAnalyze> {
+
+  Widget resultAnalyze = Padding(
+    padding: const EdgeInsets.all(10.0),
+    child: Lottie.asset(
+        'assets/moving icon/indicatorGreenBars.json'),
+  );
+
+  void getGlobalAndAnalyze() async {
+    //get global
+    goodLowHum = await readDataFirestore('goodLowHum');
+    goodLowTemp = await readDataFirestore('goodLowTemp');
+    goodHighHum = await readDataFirestore('goodHighHum');
+    goodHighTemp = await readDataFirestore('goodHighTemp');
+
+    //analyze and display
+    setState(() {
+      if ((double.parse(goodLowHum) <= double.parse(innerHum)) &&
+          (double.parse(goodHighHum) >= double.parse(innerHum))) {
+        if ((double.parse(goodLowTemp) <= double.parse(innerTemp)) &&
+            (double.parse(goodHighTemp) >= double.parse(innerTemp))) {
+          resultAnalyze = Lottie.asset('assets/moving icon/good.json');
+        } else {
+          resultAnalyze = Lottie.asset('assets/moving icon/bad.json');
+        }
+      } else {
+        resultAnalyze = Lottie.asset('assets/moving icon/bad.json');
+      }
+    });
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getGlobalAndAnalyze();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return resultAnalyze;
+  }
+}
+
 
 class OtherCityCard extends StatelessWidget {
   const OtherCityCard({
@@ -634,14 +696,19 @@ class OtherCityCard extends StatelessWidget {
   }
 }
 
-Widget ResultAnaylze() {
-  Widget returnWidget =
-      Lottie.asset('assets/moving icon/indicatorGreenBars.json');
-  if (double.parse(innerHum) <= 50) {
-    //returnWidget = Lottie.asset('assets/moving icon/good.json');
-    returnWidget = SizedBox(height: 250, child: AppText("😊"));
-  } else {
-    returnWidget = Lottie.asset('assets/moving icon/bad.json');
+class ConditionEmoji extends StatelessWidget {
+  const ConditionEmoji({
+    super.key,
+    required this.condition,
+  });
+
+  final String condition;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(height: 250, child: Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: condition == 'good' ? Image.asset('assets/icon/good2.png') : condition == 'bad' ? Image.asset('assets/icon/bad.png') : Image.asset('assets/icon/sleeping.png'),
+    ));
   }
-  return returnWidget;
 }
