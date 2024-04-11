@@ -538,7 +538,7 @@ Future<String> readDataFirestore(String dataKind) async {
       returnString = snapshot.get(dataKind).toString();
     }
 
-    appPrint('read success');
+    appPrint('read success at readDataFirestore');
   } catch (e) {
     appPrint('read fail: $e');
   }
@@ -560,10 +560,10 @@ void setPrefs(String key, String data)async{
 Future<String> getPrefs(String key) async{
   // Obtain shared preferences.
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String? action = prefs.getString(key);
-  appPrint(action!);
+  final String value = prefs.getString(key) ?? 'no data';
+  appPrint(value);
 
-  return action;
+  return value;
 }
 
 void removePrefs(String key)async{
@@ -612,4 +612,22 @@ dynamic loadFile(String fileName, String caller)async{
 Future<String> getFilePath(String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
   return '${directory.path}/$fileName';
+}
+
+
+Expanded buildAppFrame( {required int flex,required Widget child}) {
+  return Expanded(
+    flex: flex,
+    child: Center(
+      child: child,
+    ),
+  );
+}
+
+Future<bool> getLoginStatus() async {
+  bool returnBool = false;
+  if(await getPrefs('didLogin') == 'true'){
+    returnBool = true;
+  }
+  return returnBool;
 }

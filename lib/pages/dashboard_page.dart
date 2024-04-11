@@ -1,8 +1,4 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:async';
-import 'dart:isolate';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:c1/pages/setting_page.dart';
 import 'package:c1/utils/app_colors.dart';
 import 'package:c1/utils/app_components.dart';
@@ -10,14 +6,11 @@ import 'package:c1/utils/app_constants.dart';
 import 'package:c1/utils/global.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/appTools.dart';
-// import '../utils/bt_relations/ChatPage.dart';
 
 class DashBoardPage extends StatefulWidget {
   const DashBoardPage({
@@ -30,7 +23,7 @@ class DashBoardPage extends StatefulWidget {
 
 class _DashBoardPageState extends State<DashBoardPage>
     with SingleTickerProviderStateMixin {
-  //for weahter
+  //for weather
   String rainIndex = '';
   String skyForecast = '';
 
@@ -40,8 +33,8 @@ class _DashBoardPageState extends State<DashBoardPage>
       serviceKey: weatherApiKey,
       pageNo: 1,
       numOfRows: 100,
-      nx: CoordLon,
-      ny: CoordLat,
+      nx: coordLon,
+      ny: coordLat,
     );
     final List<ItemSuperNct> items = [];
     final json =
@@ -56,8 +49,8 @@ class _DashBoardPageState extends State<DashBoardPage>
       serviceKey: weatherApiKey,
       pageNo: 1,
       numOfRows: 100,
-      nx: CoordLon,
-      ny: CoordLat,
+      nx: coordLon,
+      ny: coordLat,
     );
     final List<ItemSuperFct> items = [];
     final json =
@@ -125,7 +118,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   Widget buildWeatherImage(String status) {
-    appPrint(status);
+    appPrint('buildWeatherImage as $status');
 
     switch (status) {
       case 'sunny':
@@ -205,250 +198,228 @@ class _DashBoardPageState extends State<DashBoardPage>
   @override
   Widget build(BuildContext context) {
     try {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-            useMaterial3: true,
-            fontFamily: 'AppFont',
-            textTheme: const TextTheme(
-              bodySmall: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-              bodyMedium: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-              bodyLarge: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            )),
-        home: Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: Column(
-                children: [
-                  //upper part
-                  Expanded(
-                    flex: 10,
-                    child: Column(
-                      children: [
-                        //weather
-                        Expanded(
-                          flex: 10,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              //weather sign
-                              Expanded(
-                                flex: 10,
-                                child: buildWeatherImage(
-                                    skyCodeToString(int.parse(skyForecast))),
-                              ),
+      return AppPage(
+        offInnerGap: true,
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              children: [
+                //upper part
+                Expanded(
+                  flex: 10,
+                  child: Column(
+                    children: [
+                      //weather
+                      Expanded(
+                        flex: 10,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            //weather sign
+                            Expanded(
+                              flex: 10,
+                              child: buildWeatherImage(
+                                  skyCodeToString(int.parse(skyForecast))),
+                            ),
 
-                              //presentation weather information
-                              Expanded(
-                                flex: 10,
-                                child: Column(
-                                  children: [
-                                    const Spacer(
-                                      flex: 20,
-                                    ),
-                                    Expanded(
-                                      flex: 30,
-                                      child: AppContainer(
-                                        border: borderMiddle,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            //year, month, date
-                                            Expanded(
-                                              flex: 10,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 25.0),
-                                                child: ClockText(
-                                                  y: true,
-                                                  mth: true,
-                                                  d: true,
-                                                ),
-                                              ),
-                                            ),
-
-                                            //hour, minutes
-                                            Expanded(
-                                              flex: 20,
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 20.0),
-                                                child: ClockText(
-                                                  h: true,
-                                                  min: true,
-                                                  style: TextStyle(
-                                                    fontFamily: 'PrettyAppFont',
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  displayType: ':',
-                                                ),
-                                              ),
-                                            ),
-
-                                            // presentation weather temp, hum
-                                            Expanded(
-                                              flex: 10,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 20.0),
-                                                child: AppText(
-                                                  '$outerTemp°C  $outerHum%',
-                                                  style: const TextStyle(
-                                                    color: appPoint,
-                                                  ),
-                                                  minFontSize: 30,
-                                                ),
-                                              ),
-                                            ),
-                                            //Text(geoCrdText.getLocationString()),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const Spacer(
-                                      flex: 20,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // const SingleChildScrollView(
-                        //   scrollDirection: Axis.horizontal,
-                        //   child: Row(
-                        //     children: [
-                        //       OtherCityCard(
-                        //         cityCountry: '대한민국',
-                        //         cityName: '부산',
-                        //         hum: '60%',
-                        //         temp: '25도',
-                        //       ),
-                        //       OtherCityCard(
-                        //         cityCountry: '대한민국',
-                        //         cityName: '서울',
-                        //         hum: '40%',
-                        //         temp: '18도',
-                        //       ),
-                        //       OtherCityCard(
-                        //         cityCountry: '미국',
-                        //         cityName: '뉴욕',
-                        //         hum: '30%',
-                        //         temp: '24도',
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                      ],
-                    ),
-                  ),
-
-                  //downer part
-                  Expanded(
-                    flex: 15,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20.0),
-                      child: Container(
-                          decoration: const BoxDecoration(
-                            color: appBackGrey,
-                          ),
-                          child: Column(
-                            children: [
-                              const Spacer(
-                                flex: 5,
-                              ),
-                              //title
-                              const Expanded(
-                                flex: 10,
-                                child: Text(
-                                  '현재 가구 내부',
-                                  style: TextStyle(fontSize: fontMiddleBig),
-                                ),
-                              ),
-                              //contents
-                              Expanded(
-                                flex: 50,
-                                child: Row(
-                                  children: [
-                                    const Spacer(
-                                      flex: 10,
-                                    ),
-                                    //온도 습도
-                                    Expanded(
-                                      flex: 50,
+                            //presentation weather information
+                            Expanded(
+                              flex: 10,
+                              child: Column(
+                                children: [
+                                  const Spacer(
+                                    flex: 20,
+                                  ),
+                                  Expanded(
+                                    flex: 30,
+                                    child: AppContainer(
+                                      border: borderMiddle,
                                       child: Column(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
                                         children: [
-                                          const Spacer(
-                                            flex: 10,
-                                          ),
+                                          //year, month, date
                                           Expanded(
                                             flex: 10,
-                                            child: _SettingButton(
-                                              index: '온도 습도',
-                                              value: '$innerTemp°C $innerHum%',
-                                              textStyle:
-                                                  TextStyle(color: appBlue),
+                                            child: Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 25.0),
+                                              child: ClockText(
+                                                y: true,
+                                                mth: true,
+                                                d: true,
+                                              ),
                                             ),
                                           ),
-                                          const Spacer(
-                                            flex: 10,
+
+                                          //hour, minutes
+                                          Expanded(
+                                            flex: 20,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 20.0),
+                                              child: ClockText(
+                                                h: true,
+                                                min: true,
+                                                style: TextStyle(
+                                                  fontFamily: 'PrettyAppFont',
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                displayType: ':',
+                                              ),
+                                            ),
                                           ),
+
+                                          // presentation weather temp, hum
+                                          Expanded(
+                                            flex: 10,
+                                            child: Padding(
+                                              padding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 20.0),
+                                              child: AppText(
+                                                '$outerTemp°C  $outerHum%',
+                                                style: const TextStyle(
+                                                  color: appPoint,
+                                                ),
+                                                minFontSize: 30,
+                                              ),
+                                            ),
+                                          ),
+                                          //Text(geoCrdText.getLocationString()),
                                         ],
                                       ),
                                     ),
-                                    const Spacer(
-                                      flex: 10,
+                                  ),
+                                  const Spacer(
+                                    flex: 20,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // const SingleChildScrollView(
+                      //   scrollDirection: Axis.horizontal,
+                      //   child: Row(
+                      //     children: [
+                      //       OtherCityCard(
+                      //         cityCountry: '대한민국',
+                      //         cityName: '부산',
+                      //         hum: '60%',
+                      //         temp: '25도',
+                      //       ),
+                      //       OtherCityCard(
+                      //         cityCountry: '대한민국',
+                      //         cityName: '서울',
+                      //         hum: '40%',
+                      //         temp: '18도',
+                      //       ),
+                      //       OtherCityCard(
+                      //         cityCountry: '미국',
+                      //         cityName: '뉴욕',
+                      //         hum: '30%',
+                      //         temp: '24도',
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+
+                //downer part
+                Expanded(
+                  flex: 15,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: Container(
+                        decoration: const BoxDecoration(
+                          color: appBackGrey,
+                        ),
+                        child: Column(
+                          children: [
+                            const Spacer(
+                              flex: 5,
+                            ),
+                            //title
+                            const Expanded(
+                              flex: 10,
+                              child: Text(
+                                '현재 가구 내부',
+                                style: TextStyle(fontSize: fontMiddleBig),
+                              ),
+                            ),
+                            //contents
+                            Expanded(
+                              flex: 50,
+                              child: Row(
+                                children: [
+                                  const Spacer(
+                                    flex: 10,
+                                  ),
+                                  //온도 습도
+                                  Expanded(
+                                    flex: 50,
+                                    child: Column(
+                                      children: [
+                                        const Spacer(
+                                          flex: 10,
+                                        ),
+                                        Expanded(
+                                          flex: 10,
+                                          child: _SettingButton(),
+                                        ),
+                                        const Spacer(
+                                          flex: 10,
+                                        ),
+                                      ],
                                     ),
-                                    //fan
-                                    Expanded(
-                                        flex: 30,
-                                        child: Column(
-                                          children: [
-                                            const Spacer(flex: 10,),
-                                            Expanded(
-                                              flex: 10,
-                                              child: AppButton(
-                                                onPressed: () {
-                                                  if (fan == 'off') {
-                                                    updateDataFirestore('fan', 'on');
-                                                    playFan();
-                                                  } else if (fan == 'on') {
-                                                    updateDataFirestore('fan', 'off');
-                                                    pauseFan();
-                                                  }
-                                                },
-                                                color: Colors.transparent,
-                                                child: FanWidget(aniController: _fanAniController,),
-                                              ),
+                                  ),
+                                  const Spacer(
+                                    flex: 10,
+                                  ),
+                                  //fan
+                                  Expanded(
+                                      flex: 30,
+                                      child: Column(
+                                        children: [
+                                          const Spacer(flex: 10,),
+                                          Expanded(
+                                            flex: 10,
+                                            child: AppButton(
+                                              onPressed: () {
+                                                if (fan == 'off') {
+                                                  updateDataFirestore('fan', 'on');
+                                                  playFan();
+                                                } else if (fan == 'on') {
+                                                  updateDataFirestore('fan', 'off');
+                                                  pauseFan();
+                                                }
+                                              },
+                                              color: Colors.transparent,
+                                              child: FanWidget(aniController: _fanAniController,),
                                             ),
-                                            const Spacer(flex: 10,),
-                                          ],
-                                        )),
-                                    const Spacer(
-                                      flex: 10,
-                                    ),
-                                  ],
-                                ),
+                                          ),
+                                          const Spacer(flex: 10,),
+                                        ],
+                                      )),
+                                  const Spacer(
+                                    flex: 10,
+                                  ),
+                                ],
                               ),
-                              const Spacer(
-                                flex: 5,
-                              ),
-                            ],
-                          )),
-                    ),
-                  )
-                ],
-              ),
+                            ),
+                            const Spacer(
+                              flex: 5,
+                            ),
+                          ],
+                        )),
+                  ),
+                )
+              ],
             ),
           ),
         ),
@@ -456,6 +427,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     } catch (e) {
       appPrint(e.toString());
       return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
           body: Center(
               child: showAppIndicator
@@ -495,13 +467,9 @@ class _FanWidgetState extends State<FanWidget> {
 
 class _SettingButton extends StatefulWidget {
   const _SettingButton({
-    required this.index,
-    required this.value,
     this.textStyle = const TextStyle(),
   });
 
-  final String index;
-  final String value;
   final TextStyle textStyle;
 
   @override
@@ -509,6 +477,7 @@ class _SettingButton extends StatefulWidget {
 }
 
 class _SettingButtonState extends State<_SettingButton> {
+
   @override
   void initState() {
     super.initState();
@@ -529,20 +498,46 @@ class _SettingButtonState extends State<_SettingButton> {
           children: [
             Expanded(
               flex: 14,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppText(
-                    widget.index,
-                    //style: textStyle,
-                    minFontSize: fontMiddleBig,
-                  ),
-                  AppText(
-                    widget.value,
-                    style: widget.textStyle,
-                    minFontSize: fontMiddle,
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        //mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Spacer(),
+                          const SideHint(text: "온도"),
+                          Expanded(
+                            child: AppText(
+                              '$innerTemp°C',
+                              style: const TextStyle(color: appBlue),
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10,),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Spacer(),
+                          const SideHint(text: '습도'),
+                          Expanded(
+                            child: AppText(
+                              '$innerHum%',
+                              style: const TextStyle(color: appBlue),
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const Expanded(flex: 10, child: ResultAnalyze()),
@@ -564,11 +559,8 @@ class ResultAnalyze extends StatefulWidget {
 
 class _ResultAnalyzeState extends State<ResultAnalyze> {
 
-  Widget resultAnalyze = Padding(
-    padding: const EdgeInsets.all(10.0),
-    child: Lottie.asset(
-        'assets/moving icon/indicatorGreenBars.json'),
-  );
+  late Widget resultAnalyze;
+  late Timer timer;
 
   void getGlobalAndAnalyze() async {
     //get global
@@ -597,8 +589,22 @@ class _ResultAnalyzeState extends State<ResultAnalyze> {
   @override
   void initState() {
     super.initState();
-    getGlobalAndAnalyze();
+    resultAnalyze = Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Lottie.asset(
+          'assets/moving icon/indicatorGreenBars.json'),
+    );
+    timer = Timer.periodic(const Duration(seconds: 6), (_) {
+      getGlobalAndAnalyze();
+    });
   }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return resultAnalyze;

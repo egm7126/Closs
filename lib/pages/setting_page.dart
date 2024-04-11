@@ -19,6 +19,7 @@ class SettingTest extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: SettingPage(),
       ),
@@ -44,11 +45,8 @@ class _SettingPageState extends State<SettingPage> {
   final TextEditingController _goodHighTempController = TextEditingController();
   final TextEditingController _goodHighHumController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    // 각 텍스트 필드에 대한 변경 사항을 감지하여 변수를 업데이트
-  }
+  final TextEditingController _coordLatController = TextEditingController();
+  final TextEditingController _coordLonController = TextEditingController();
 
   void getPara2TextController() async {
     _actHumController.text = await readDataFirestore('actHum');
@@ -61,246 +59,266 @@ class _SettingPageState extends State<SettingPage> {
     _goodHighTempController.text = await readDataFirestore('goodHighTemp');
   }
 
-  void put2Global(){
+  void put2Global() {
     _goodLowHumController.text = goodLowHum;
     _goodLowTempController.text = goodLowTemp;
     _goodHighHumController.text = goodHighHum;
     _goodHighTempController.text = goodHighTemp;
   }
 
+  void _send2Firestore() {
+    List<Map<String, String>> data = [
+      {'actHum': _actHumController.text},
+      {'actTemp': _actTempController.text},
+      {'stopHum': _stopHumController.text},
+      {'stopTemp': _stopTempController.text},
+      {'goodLowHum': _goodLowHumController.text},
+      {'goodLowTemp': _goodLowTempController.text},
+      {'goodHighHum': _goodHighHumController.text},
+      {'goodHighTemp': _goodHighTempController.text},
+    ];
+
+    try{
+      commitBatchFirestore(data);
+      coordLat = double.parse(_coordLatController.text);
+      coordLon = double.parse(_coordLonController.text);
+      appToast(msg: '적용되었습니다.');
+    }catch (e) {
+      appToast(msg: '오류가 발생하였습니다.');
+    }
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     getPara2TextController();
     put2Global();
+    _coordLatController.text = '$coordLat';
+    _coordLonController.text = '$coordLon';
     return AppPage(
-        child: Column(
-      children: [
-        const AppText(
-          '설정',
-          minFontSize: fontBig,
-        ),
-        SizedBox(height: 30),
-        //setting area
-        Expanded(
-          flex: 20,
-          child: Column(
-            children: [
-              Row(
+      child: Column(
+        children: [
+          Expanded(
+            flex: 100,
+            child: AppText(
+              '설정',
+              style: TextStyle(fontSize: fontBig),
+            ),
+          ),
+          Expanded(
+            flex: 500,
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 100,
+                  child: _buildSettingArea4Var(
+                    title: '작동 기준',
+                    sideHintLTL: '작동',
+                    lt: _actTempController,
+                    sideHintLTR: '°C',
+                    rt: _actHumController,
+                    sideHintRTR: '%',
+                    sideHintLBL: '정지',
+                    lb: _stopTempController,
+                    sideHintLBR: '°C',
+                    rb: _stopHumController,
+                    sideHintRBR: '%',
+                  ),
+                ),
+                Expanded(
+                  flex: 100,
+                  child: _buildSettingArea4Var(
+                    title: '적정 기준',
+                    sideHintLTL: '온도',
+                    lt: _goodLowTempController,
+                    sideHintLTR: '에서',
+                    rt: _goodHighTempController,
+                    sideHintRTR: '까지',
+                    sideHintLBL: '습도',
+                    sideHintLBR: '에서',
+                    lb: _goodLowHumController,
+                    rb: _goodHighHumController,
+                    sideHintRBR: '까지',
+                  ),
+                ),
+                Expanded(
+                  flex: 100,
+                  child: _buildPosition(),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+              flex: 100,
+              child: Row(
                 children: [
+                  const Spacer(flex: 100,),
                   Expanded(
-                    flex: 10,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Spacer(
-                                  flex: 3,
-                                ),
-                                Expanded(
-                                  flex: 20,
-                                  child: Center(
-                                    child: AppText(
-                                      '환기 기준',
-                                      style: TextStyle(fontSize: fontMiddle),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                        flex: 3,
-                                        child: AppText(
-                                          '작동',
-                                          style: TextStyle(
-                                              fontSize: fontSmall,
-                                              fontWeight: FontWeight.normal,
-                                              color: fontGrey),
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '작동 온도',
-                                          controller: _actTempController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                    AppText(
-                                      '°C', style: TextStyle(
-                                      color: fontGrey
-                                    ),
-                                    ),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '작동 습도',
-                                          controller: _actHumController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                        flex: 3,
-                                        child: AppText(
-                                          '정지',
-                                          style: TextStyle(
-                                              fontSize: fontSmall,
-                                              fontWeight: FontWeight.normal,
-                                              color: fontGrey),
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '정지 온도',
-                                          controller: _stopTempController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '정지 습도',
-                                          controller: _stopHumController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+                    flex: 300,
+                    child: Column(
+                      children: [
+                        const Spacer(),
+                        AppButton(
+                          onPressed: () {
+                            _send2Firestore();
+                          },
+                          text: '적용',
                         ),
-                      ),
+                        const Spacer(),
+                      ],
                     ),
                   ),
-                  SizedBox(
-                    height: 1,
-                    width: 16,
-                  ),
-                  Expanded(
-                    flex: 10,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Spacer(
-                                  flex: 3,
-                                ),
-                                Expanded(
-                                  flex: 20,
-                                  child: Center(
-                                    child: AppText(
-                                      '적정도 기준',
-                                      style: TextStyle(fontSize: fontMiddle),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                //온도
-                                Row(
-                                  children: [
-                                    Expanded(
-                                        flex: 3,
-                                        child: AppText(
-                                          '온도',
-                                          style: TextStyle(
-                                              fontSize: fontSmall,
-                                              fontWeight: FontWeight.normal,
-                                              color: fontGrey),
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '',
-                                          controller: _goodLowTempController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '',
-                                          controller: _goodHighTempController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                  ],
-                                ),
-                                //습도
-                                Row(
-                                  children: [
-                                    Expanded(
-                                        flex: 3,
-                                        child: AppText(
-                                          '습도',
-                                          style: TextStyle(
-                                              fontSize: fontSmall,
-                                              fontWeight: FontWeight.normal,
-                                              color: fontGrey),
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '',
-                                          controller: _goodLowHumController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                    Expanded(
-                                        flex: 10,
-                                        child: AppTextField(
-                                          text: '',
-                                          controller: _goodHighHumController,
-                                          backgroundColor: textFieldGrey,
-                                        )),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  const Spacer(flex: 100,),
                 ],
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPosition() {
+    return Column(
+      children: [
+        _SettingMiddleTitle(
+          title: '위치',
+        ),
+        Expanded(
+          flex: 300,
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    SideHint(text: '위도'),
+                    _SettingTextFieldFittedFontSize(controller: _coordLatController, fontSize: fontSmall,),
+                  ],
+                ),
               ),
-              Spacer(),
-              AppButton(
-                onPressed: () {
-                  List<Map<String, String>> data = [
-                    {'goodHighHum': _goodHighHumController.text},
-                    {'goodHighTemp': _goodHighTempController.text},
-                    {'goodLowHum': _goodLowHumController.text},
-                    {'goodLowTemp': _goodLowTempController.text},
-                    {'actHum': _actHumController.text},
-                    {'actTemp': _actTempController.text},
-                    {'stopHum': _stopHumController.text},
-                    {'stopTemp': _stopTempController.text},
-                  ];
-                  commitBatchFirestore(data);
-                },
-                text: '적용',
-                width: MediaQuery.of(context).size.width / 3,
+              Expanded(
+                child: Column(
+                  children: [
+                    SideHint(text: '경도'),
+                    _SettingTextFieldFittedFontSize(controller: _coordLonController, fontSize: fontSmall,),
+                  ],
+                ),
               ),
             ],
           ),
         ),
-        const Spacer(
-          flex: 10,
+      ],
+    );
+  }
+
+  Widget _buildSettingArea4Var({
+    required String title,
+    required TextEditingController lt,
+    required TextEditingController rt,
+    required TextEditingController lb,
+    required TextEditingController rb,
+    sideHintLTL = '',
+    sideHintLTR = '',
+    sideHintRTL = '',
+    sideHintRTR = '',
+    sideHintLBL = '',
+    sideHintLBR = '',
+    sideHintRBL = '',
+    sideHintRBR = '',
+  }) {
+    return Column(
+      children: [
+        _SettingMiddleTitle(title: title),
+        Column(
+          children: [
+            Row(
+              children: [
+                SideHint(text: sideHintLTL),
+                _SettingTextFieldByExpanded(controller: lt),
+                SideHint(text: sideHintLTR),
+                const SizedBox(
+                  width: 10,
+                ),
+                SideHint(text: sideHintRTL),
+                _SettingTextFieldByExpanded(controller: rt),
+                SideHint(text: sideHintRTR),
+              ],
+            ),
+            Row(
+              children: [
+                SideHint(text: sideHintLBL),
+                _SettingTextFieldByExpanded(controller: lb),
+                SideHint(text: sideHintLBR),
+                const SizedBox(
+                  width: 10,
+                ),
+                SideHint(text: sideHintRBL),
+                _SettingTextFieldByExpanded(controller: rb),
+                SideHint(text: sideHintRBR),
+              ],
+            ),
+          ],
         ),
       ],
+    );
+  }
+}
+
+class _SettingTextFieldFittedFontSize extends StatelessWidget {
+  const _SettingTextFieldFittedFontSize({
+    super.key,
+    required this.controller,
+    required this.fontSize,
+  });
+
+  final TextEditingController controller;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text('',style: TextStyle(fontSize: fontSize),),
+        _SettingTextFieldByExpanded(controller: controller,),
+      ],
+    );
+  }
+}
+
+class _SettingMiddleTitle extends StatelessWidget {
+  const _SettingMiddleTitle({
+    super.key,
+    required this.title,
+  });
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppText(
+      title,
+      style: const TextStyle(fontSize: fontMiddle),
+    );
+  }
+}
+
+class _SettingTextFieldByExpanded extends StatelessWidget {
+  const _SettingTextFieldByExpanded({
+    super.key,
+    required this.controller,
+    this.text = '',
+  });
+
+  final String text;
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: AppTextField(
+      text: text,
+      controller: controller,
+      backgroundColor: textFieldGrey,
     ));
   }
 }
+
+

@@ -1,8 +1,8 @@
 import 'package:c1/utils/app_components.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 
-double CoordLon = 126.5765034; //경도
-double CoordLat = 36.4119319; //위도
+double coordLon = 126.5765034; //경도
+double coordLat = 36.4119319; //위도
 
 String innerHum = '';
 String innerTemp = '';

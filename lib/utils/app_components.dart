@@ -1,28 +1,190 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:c1/utils/global.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:ui';
+
+import 'package:c1/pages/login_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
+import '../pages/dashboard_page.dart';
+import '../pages/setting_page.dart';
+import 'appTools.dart';
 import 'app_colors.dart';
 import 'app_constants.dart';
+import 'global.dart';
+
+class AppFrame extends StatefulWidget {
+  const AppFrame({super.key});
+
+  @override
+  State<AppFrame> createState() => _AppFrameState();
+}
+
+class _AppFrameState extends State<AppFrame> {
+  int _selectedIndex = 0;
+  bool _isDrawerOpen = false;
+
+  String _userName = 'hi';
+  bool _didLogin = false;
+
+  void getLogin() async {
+    _didLogin = await getLoginStatus();
+  }
+
+  static final List<Widget> _widgetOptions = <Widget>[
+    const DashBoardPage(),
+    const SettingPage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    getLogin();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(""),
+        backgroundColor: Colors.transparent,
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                setState(() {
+                  _isDrawerOpen = !_isDrawerOpen;
+                });
+              },
+            );
+          },
+        ),
+      ),
+      body: Stack(
+        children: [
+          Opacity(
+            opacity: _isDrawerOpen ? 0.5 : 1.0,
+            child: _widgetOptions.elementAt(_selectedIndex),
+          ),
+          if (_isDrawerOpen)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isDrawerOpen = false;
+                });
+              },
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              ),
+            ),
+          if (_isDrawerOpen)
+            buildSideMenu(context),
+        ],
+      ),
+      bottomNavigationBar: buildBottomNavigationBar(),
+    );
+  }
+
+  BottomNavigationBar buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      selectedItemColor: appBlue,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'Dashboard', // label 추가
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings_outlined),
+          activeIcon: Icon(Icons.settings),
+          label: 'Setting', // label 추가
+        ),
+      ],
+    );
+  }
+
+  Drawer buildSideMenu(BuildContext context) {
+    return Drawer(
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              width: _isDrawerOpen ? MediaQuery.of(context).size.width * 0.6 : 0,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  const DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: appBlue,
+                    ),
+                    child: Text(
+                      '사용자 정보',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: fontMiddle,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('프로필'),
+                    onTap: () {
+                      // 프로필 페이지로 이동하거나 해당 기능 구현
+                      // 여기에 코드 추가
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('설정'),
+                    onTap: () {
+                      // 설정 페이지로 이동하거나 해당 기능 구현
+                      // 여기에 코드 추가
+                    },
+                  ),
+                  ListTile(
+                    title: Text('로그인 페이지'),
+                    onTap: () {
+                      setState(() {
+                        _isDrawerOpen = false;
+                        // Drawer를 닫습니다.
+                      });
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+  }
+}
+
 
 class AppPage extends StatefulWidget {
   const AppPage({
     super.key,
     required this.child,
     this.backgroundColor = appBackWhite,
+    this.offInnerGap = false,
   });
 
   final Widget child;
   final Color backgroundColor;
+  final bool offInnerGap;
 
   @override
   State<AppPage> createState() => _AppPageState();
 }
 
 class _AppPageState extends State<AppPage> {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -45,12 +207,15 @@ class _AppPageState extends State<AppPage> {
         scaffoldBackgroundColor: widget.backgroundColor,
       ),
       home: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: widget.child,
-          ),
-        ),
+        body: widget.offInnerGap
+            ? Center(child: widget.child)
+            : SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child:
+                      Center(child: widget.child),
+                ),
+              ),
       ),
     );
   }
@@ -193,25 +358,6 @@ appToast({required String msg}) {
   );
 }
 
-class ClossProtocol {
-  String kind = '';
-  String serial = '';
-  String content = '';
-
-  ClossProtocol(String data) {
-    RegExp regex =
-        RegExp(r"@k(.*?)@s(.*?)@c(.*)"); // Define regular expression pattern
-    Match? match =
-        regex.firstMatch(data); // Find the first match in the input data
-
-    if (match != null) {
-      kind = match.group(1)!; // Extract the kind
-      serial = match.group(2)!; // Extract the serial
-      content = match.group(3)!; // Extract the content
-    }
-  }
-}
-
 class AppText extends StatelessWidget {
   const AppText(
     this.text, {
@@ -230,10 +376,8 @@ class AppText extends StatelessWidget {
   Widget build(BuildContext context) {
     if (style.fontSize == null) {
       return FittedBox(
-        child: AutoSizeText(
+        child: Text(
           text,
-          maxLines: maxLines,
-          minFontSize: minFontSize,
           style: style,
         ),
       );
@@ -251,5 +395,23 @@ class AppIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Lottie.asset('assets/moving icon/indicatorBlueCircle.json');
+  }
+}
+
+class SideHint extends StatelessWidget {
+  const SideHint({
+    super.key,
+    required this.text,
+  });
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppText(
+      text,
+      style: const TextStyle(
+          fontSize: fontSmall, fontWeight: FontWeight.normal, color: fontGrey),
+    );
   }
 }
