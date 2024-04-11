@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/jbs1/Closs/clossEnv"
+set -gx VIRTUAL_ENV "/home/jbs1/storage_min_1/dynamic/projects/BuBu/WiSA/c1/clossEnv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

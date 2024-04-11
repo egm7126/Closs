@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 import firebase_admin
 from firebase_admin import credentials
@@ -25,6 +26,10 @@ dhtDevice = adafruit_dht.DHT22(board.D27)
 
 beforeTemp = ''
 beforeHum = ''
+
+firebase_cred_filename = "mossis-family-firebase-adminsdk-bgai4-9ac292b452.json"
+current_dir = os.path.dirname(os.path.abspath(__file__))
+firebase_cred_path = os.path.join(current_dir, firebase_cred_filename)
 
 def execute_command(command):
     try:
@@ -89,7 +94,7 @@ def Read():
 
 def main():
     try: 
-        cred = credentials.Certificate("/home/jbs1/Closs/mossis-family-firebase-adminsdk-bgai4-9ac292b452.json")
+        cred = credentials.Certificate(firebase_cred_path)
         firebase_admin.initialize_app(cred)
         global fan
         
