@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 import firebase_admin
 from firebase_admin import credentials
@@ -36,11 +37,19 @@ def execute_command(command):
         if error:
             print("에러 발생:", error)
     except subprocess.CalledProcessError as e:
-        print("에러 발생:", e)
+        print("에러 발생:", errror)
+        
+def execute_fan(fan):
+    if(fan=="on"):
+        globals()['fan'].on()
+        print("fan: on")
+    if(fan=="off"):
+        globals()['fan'].off()
+        print("fan: off")
 
 def Write():
-    print("function Write >")
     try:
+        print("function Write >")
         db = firestore.client()
         batch = db.batch()
         doc_ref = db.collection(productName).document(productSerial)
@@ -79,17 +88,25 @@ def Read():
         command = doc.to_dict().get('command')
         fan = doc.to_dict().get('fan')
         doc_ref.update({'command': ''})
-        print('fan: ', fan)
+        
         if command:
             print('command: ', command)
             execute_command(command)
+        if fan:
+            print('fan: ', fan)
+            execute_fan(fan)
+            
             
     except Exception as e:  # 기타 예외 처리
         print("에러 발생:", e)
 
 def main():
     try: 
-        cred = credentials.Certificate("/home/jbs1/Closs/mossis-family-firebase-adminsdk-bgai4-9ac292b452.json")
+        
+        firebase_cred_filename = "fireKey.json"
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        firebase_cred_path = os.path.join(current_dir, firebase_cred_filename)
+        cred = credentials.Certificate(firebase_cred_path)
         firebase_admin.initialize_app(cred)
         global fan
         
