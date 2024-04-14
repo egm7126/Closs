@@ -23,12 +23,14 @@ class DashBoardPage extends StatefulWidget {
 
 class _DashBoardPageState extends State<DashBoardPage>
     with SingleTickerProviderStateMixin {
+  late Timer _timer;
+
   //for weather
   String rainIndex = '';
   String skyForecast = '';
 
   void _buildFromRecentData() {
-    appPrint('readRecentData >');
+    appPrint('_buildFromRecentData >');
     for (ItemSuperFct item in recentFct.itemList) {
       setState(() {
         if (item.category == 'SKY') {
@@ -50,6 +52,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   }
 
   void loadWeatherData() async{
+    appPrint("loadWeatherData >");
     try {
       recentFct = await loadWeatherFile('recentFctData', 'fct');
       recentNct = await loadWeatherFile('recentNctData', 'nct');
@@ -63,6 +66,7 @@ class _DashBoardPageState extends State<DashBoardPage>
       } else {
         _buildFromRecentData();
       }
+      appPrint("success loadingWeatherData");
     } catch (e) {
       appPrint('$e at loadWeatherData');
     }
@@ -110,6 +114,9 @@ class _DashBoardPageState extends State<DashBoardPage>
         showAppIndicator = false;
       });
     });
+    _timer = Timer.periodic(const Duration(minutes: 30), (timer) {
+      _buildFromRecentData();
+    });
 
     loadWeatherData();
 
@@ -137,6 +144,8 @@ class _DashBoardPageState extends State<DashBoardPage>
     } else {
       pauseFan();
     }
+
+    getSettingPara();
   }
 
   @override
@@ -144,6 +153,7 @@ class _DashBoardPageState extends State<DashBoardPage>
     _fanAniController.dispose();
     _subscriptionFirebase.cancel();
     super.dispose();
+    _timer.cancel();
   }
 
   @override

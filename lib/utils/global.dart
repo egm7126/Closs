@@ -14,6 +14,10 @@ String goodLowHum='';
 String goodLowTemp='';
 String goodHighHum='';
 String goodHighTemp='';
+String actTemp = '';
+String actHum = '';
+String stopTemp = '';
+String stopHum = '';
 
 bool isWeatherUpdated = false;
 

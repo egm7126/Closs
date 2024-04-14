@@ -48,18 +48,11 @@ class _SettingPageState extends State<SettingPage> {
   final TextEditingController _coordLatController = TextEditingController();
   final TextEditingController _coordLonController = TextEditingController();
 
-  void getPara2TextController() async {
-    _actHumController.text = await readDataFirestore('actHum');
-    _actTempController.text = await readDataFirestore('actTemp');
-    _stopHumController.text = await readDataFirestore('stopHum');
-    _stopTempController.text = await readDataFirestore('stopTemp');
-    _goodLowHumController.text = await readDataFirestore('goodLowHum');
-    _goodLowTempController.text = await readDataFirestore('goodLowTemp');
-    _goodHighHumController.text = await readDataFirestore('goodHighHum');
-    _goodHighTempController.text = await readDataFirestore('goodHighTemp');
-  }
-
-  void put2Global() {
+  void loadSettingPara() async {
+    _actHumController.text = actHum;
+    _actTempController.text = actTemp;
+    _stopHumController.text = stopHum;
+    _stopTempController.text = stopTemp;
     _goodLowHumController.text = goodLowHum;
     _goodLowTempController.text = goodLowTemp;
     _goodHighHumController.text = goodHighHum;
@@ -91,8 +84,7 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    getPara2TextController();
-    put2Global();
+    loadSettingPara();
     _coordLatController.text = '$coordLat';
     _coordLonController.text = '$coordLon';
     return AppPage(
@@ -198,7 +190,7 @@ class _SettingPageState extends State<SettingPage> {
                 child: Column(
                   children: [
                     SideHint(text: '경도'),
-                    _SettingTextFieldFittedFontSize(controller: _coordLonController, fontSize: fontSmall,),
+                    _SettingTextFieldFittedFontSize(controller: _coordLonController, fontSize: fontSetting,),
                   ],
                 ),
               ),
@@ -295,7 +287,6 @@ class _SettingMiddleTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppText(
       title,
-      style: const TextStyle(fontSize: fontMiddle),
     );
   }
 }

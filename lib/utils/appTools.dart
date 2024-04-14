@@ -15,6 +15,104 @@ import 'dart:math' as Math;
 import 'app_constants.dart';
 import 'global.dart';
 
+//common
+void appPrint(String s){
+  if (kDebugMode) {
+    print(s);
+  }
+}
+
+void setPrefs(String key, String data)async{
+  // Obtain shared preferences.
+  try{final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(key, data);}
+  catch (e) {
+    appPrint('error: $e');
+  }
+
+}
+Future<String> getPrefs(String key) async{
+  try{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String value = prefs.getString(key) ?? 'no data';
+    appPrint(value);
+
+    return value;
+  }
+  catch (e) {
+    return 'no data';
+  }
+}
+void removePrefs(String key)async{
+  // Obtain shared preferences.
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(key);
+}
+
+Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
+  appPrint('getSuperNctListJson >');
+  final weather = Weather(
+    serviceKey: weatherApiKey,
+    pageNo: 1,
+    numOfRows: 100,
+    nx: coordLon,
+    ny: coordLat,
+  );
+  final List<ItemSuperNct> items = [];
+  final json =
+  await SuperNctRepositoryImp(isLog: isLog).getItemListJSON(weather);
+  json.map((e) => items.add(e)).toList();
+
+  return items;
+}
+Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
+  appPrint('getSuperFctListJson >');
+  final weather = Weather(
+    serviceKey: weatherApiKey,
+    pageNo: 1,
+    numOfRows: 100,
+    nx: coordLon,
+    ny: coordLat,
+  );
+  final List<ItemSuperFct> items = [];
+  final json =
+  await SuperFctRepositoryImp(isLog: isLog).getItemListJSON(weather);
+  json.map((e) => items.add(e)).toList();
+
+  return items;
+}
+
+
+void saveFile(String fileName, data)async{
+  String filePath = await getFilePath(fileName);
+  File file = File('$filePath.json');
+  try{
+    await file.writeAsString(jsonEncode(data.toJson()));
+    appPrint('success saving file $filePath.json');
+  }catch (e) {
+    appPrint('fail saving file $filePath.json');
+  }
+}
+Future<String> getFilePath(String fileName) async {
+  final directory = await getApplicationDocumentsDirectory();
+  return '${directory.path}/$fileName';
+}
+
+Expanded buildAppFrame( {required int flex,required Widget child}) {
+  return Expanded(
+    flex: flex,
+    child: Center(
+      child: child,
+    ),
+  );
+}
+Future<bool> getLoginStatus() async {
+  bool returnBool = false;
+  if(await getPrefs('didLogin') == 'true'){
+    returnBool = true;
+  }
+  return returnBool;
+}
 class Square extends StatelessWidget {
   const Square({
     super.key,
@@ -525,25 +623,21 @@ dynamic loadWeatherFile(String fileName, String caller)async{
   String filePath = await getFilePath(fileName);
   File file = File('$filePath.json');
   try{
-    if (file.existsSync()) {
-      String contents = await file.readAsString();
-      if(caller=='fct'){
-        appPrint('success load file $filePath.json');
-        return SuperFctListWithTime.fromJson(jsonDecode(contents));
-      }else{
-        appPrint('success load file $filePath.json');
-        return SuperNctListWithTime.fromJson(jsonDecode(contents));
-      }
+    String contents = await file.readAsString();
+    if(caller=='fct'){
+      appPrint('success load file $filePath.json');
+      return SuperFctListWithTime.fromJson(jsonDecode(contents));
     }else{
-      appPrint('there are no file called $fileName');
-      if(caller == 'fct'){
-        return makeFctListWithTime();
-      }else{
-        return makeNctListWithTime();
-      }
+      appPrint('success load file $filePath.json');
+      return SuperNctListWithTime.fromJson(jsonDecode(contents));
     }
   }catch (e){
-    appPrint('fail load file $filePath.json');
+    appPrint('there are no file called $fileName');
+    if(caller == 'fct'){
+      return makeFctListWithTime();
+    }else{
+      return makeNctListWithTime();
+    }
   }
 
 }
@@ -591,105 +685,14 @@ Future<String> readDataFirestore(String dataKind) async {
   return returnString;
 }
 
-void appPrint(String s){
-  if (kDebugMode) {
-    print(s);
-  }
-}
-
-void setPrefs(String key, String data)async{
-  // Obtain shared preferences.
-  try{final SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setString(key, data);}
-  catch (e) {
-    appPrint('error: $e');
-  }
-
-}
-
-Future<String> getPrefs(String key) async{
-  try{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String value = prefs.getString(key) ?? 'no data';
-    appPrint(value);
-
-    return value;
-  }
-  catch (e) {
-    return 'no data';
-  }
-}
-
-void removePrefs(String key)async{
-  // Obtain shared preferences.
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.remove(key);
-}
-
-Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
-  appPrint('getSuperNctListJson >');
-  final weather = Weather(
-    serviceKey: weatherApiKey,
-    pageNo: 1,
-    numOfRows: 100,
-    nx: coordLon,
-    ny: coordLat,
-  );
-  final List<ItemSuperNct> items = [];
-  final json =
-  await SuperNctRepositoryImp(isLog: isLog).getItemListJSON(weather);
-  json.map((e) => items.add(e)).toList();
-
-  return items;
-}
-Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
-  appPrint('getSuperFctListJson >');
-  final weather = Weather(
-    serviceKey: weatherApiKey,
-    pageNo: 1,
-    numOfRows: 100,
-    nx: coordLon,
-    ny: coordLat,
-  );
-  final List<ItemSuperFct> items = [];
-  final json =
-  await SuperFctRepositoryImp(isLog: isLog).getItemListJSON(weather);
-  json.map((e) => items.add(e)).toList();
-
-  return items;
-}
-
-
-void saveFile(String fileName, data)async{
-  String filePath = await getFilePath(fileName);
-  File file = File('$filePath.json');
-  try{
-    await file.writeAsString(jsonEncode(data.toJson()));
-    appPrint('success saving file $filePath.json');
-  }catch (e) {
-    appPrint('fail saving file $filePath.json');
-  }
-}
-
-Future<String> getFilePath(String fileName) async {
-  final directory = await getApplicationDocumentsDirectory();
-  return '${directory.path}/$fileName';
-}
-
-
-Expanded buildAppFrame( {required int flex,required Widget child}) {
-  return Expanded(
-    flex: flex,
-    child: Center(
-      child: child,
-    ),
-  );
-}
-
-Future<bool> getLoginStatus() async {
-  bool returnBool = false;
-  if(await getPrefs('didLogin') == 'true'){
-    returnBool = true;
-  }
-  return returnBool;
+//condition control
+void getSettingPara() async{
+  actHum = await readDataFirestore('actHum');
+  actTemp = await readDataFirestore('actTemp');
+  stopHum = await readDataFirestore('stopHum');
+  stopTemp = await readDataFirestore('stopTemp');
+  goodLowHum = await readDataFirestore('goodLowHum');
+  goodLowTemp = await readDataFirestore('goodLowTemp');
+  goodHighHum = await readDataFirestore('goodHighHum');
+  goodHighTemp = await readDataFirestore('goodHighTemp');
 }
