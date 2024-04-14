@@ -27,40 +27,7 @@ class _DashBoardPageState extends State<DashBoardPage>
   String rainIndex = '';
   String skyForecast = '';
 
-  Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
-    appPrint('getSuperNctListJson >');
-    final weather = Weather(
-      serviceKey: weatherApiKey,
-      pageNo: 1,
-      numOfRows: 100,
-      nx: coordLon,
-      ny: coordLat,
-    );
-    final List<ItemSuperNct> items = [];
-    final json =
-        await SuperNctRepositoryImp(isLog: isLog).getItemListJSON(weather);
-    json.map((e) => setState(() => items.add(e))).toList();
-
-    return items;
-  }
-  Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
-    appPrint('getSuperFctListJson >');
-    final weather = Weather(
-      serviceKey: weatherApiKey,
-      pageNo: 1,
-      numOfRows: 100,
-      nx: coordLon,
-      ny: coordLat,
-    );
-    final List<ItemSuperFct> items = [];
-    final json =
-        await SuperFctRepositoryImp(isLog: isLog).getItemListJSON(weather);
-    json.map((e) => setState(() => items.add(e))).toList();
-
-    return items;
-  }
-
-  void buildFromRecentData() {
+  void _buildFromRecentData() {
     appPrint('readRecentData >');
     for (ItemSuperFct item in recentFct.itemList) {
       setState(() {
@@ -82,35 +49,19 @@ class _DashBoardPageState extends State<DashBoardPage>
     }
   }
 
-  void setWeatherData() async {
-    appPrint('setWeatherData >');
-    try {
-      superFctItems = getSuperFctListJson();
-      superNctItems = getSuperNctListJson();
-      List<ItemSuperFct> gotFct = await superFctItems;
-      List<ItemSuperNct> gotNct = await superNctItems;
-      recentFct = RecentSuperFctData(gotFct, DateTime.now());
-      recentNct = RecentSuperNctData(gotNct, DateTime.now());
-      saveFile('recentFctData', recentFct);
-      saveFile('recentNctData', recentNct);
-    } catch (e) {
-      appPrint('$e');
-    }
-    buildFromRecentData();
-  }
-
   void loadWeatherData() async{
     try {
-      recentFct = await loadFile('recentFctData', 'fct');
-      recentNct = await loadFile('recentNctData', 'nct');
+      recentFct = await loadWeatherFile('recentFctData', 'fct');
+      recentNct = await loadWeatherFile('recentNctData', 'nct');
       DateTime now = DateTime.now();
       if (recentFct.time.add(const Duration(minutes: 30)).isBefore(now)) {
         //만약 최근 데이터 시간값의 30분을 더해도 현재보다 더 이전이라면
         //when too old data
         appPrint('call new weather data because recent data is too old');
         setWeatherData();
+        _buildFromRecentData();
       } else {
-        buildFromRecentData();
+        _buildFromRecentData();
       }
     } catch (e) {
       appPrint('$e at loadWeatherData');

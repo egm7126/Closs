@@ -5,6 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:korea_weather_api/korea_weather_api.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:geolocator/geolocator.dart';
@@ -219,7 +220,7 @@ class _ClockTextState extends State<ClockText> {
     //return Text(widget.frontString+returnString, style: widget.style,);
   }
 }
-
+//gps
 // Future<Position> getCurrentGPS() async {
 //   bool serviceEnabled;
 //   LocationPermission permission;
@@ -260,123 +261,6 @@ class _ClockTextState extends State<ClockText> {
 // Future<Position?> getPastGPS() async {
 //   return await Geolocator.getLastKnownPosition();
 // }
-
-class GridGpsConvertor {
-  static const double RE = 6371.00877; // 지구 반경(km)
-  static const double GRID = 5.0; // 격자 간격(km)
-  static const double SLAT1 = 30.0; // 투영 위도1(degree)
-  static const double SLAT2 = 60.0; // 투영 위도2(degree)
-  static const double OLON = 126.0; // 기준점 경도(degree)
-  static const double OLAT = 38.0; // 기준점 위도(degree)
-  static const double XO = 43; // 기준점 X좌표(GRID)
-  static const double YO = 136; // 기1준점 Y좌표(GRID)
-
-  static const double DEGRAD = Math.pi / 180.0;
-  static const double RADDEG = 180.0 / Math.pi;
-
-  static double get re => RE / GRID;
-
-  static double get slat1 => SLAT1 * DEGRAD;
-
-  static double get slat2 => SLAT2 * DEGRAD;
-
-  static double get olon => OLON * DEGRAD;
-
-  static double get olat => OLAT * DEGRAD;
-
-  static double get snTmp =>
-      Math.tan(Math.pi * 0.25 + slat2 * 0.5) /
-          Math.tan(Math.pi * 0.25 + slat1 * 0.5);
-
-  static double get sn =>
-      Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(snTmp);
-
-  static double get sfTmp => Math.tan(Math.pi * 0.25 + slat1 * 0.5);
-
-  static double get sf => Math.pow(sfTmp, sn) * Math.cos(slat1) / sn;
-
-  static double get roTmp => Math.tan(Math.pi * 0.25 + olat * 0.5);
-
-  static double get ro => re * sf / Math.pow(roTmp, sn);
-
-  static gridToGPS(int v1, int v2) {
-    var rs = {};
-    double theta;
-
-    rs['x'] = v1;
-    rs['y'] = v2;
-    int xn = (v1 - XO).toInt();
-    int yn = (ro - v2 + YO).toInt();
-    var ra = Math.sqrt(xn * xn + yn * yn);
-    if (sn < 0.0) ra = -ra;
-    var alat = Math.pow((re * sf / ra), (1.0 / sn));
-    alat = 2.0 * Math.atan(alat) - Math.pi * 0.5;
-
-    if (xn.abs() <= 0.0) {
-      theta = 0.0;
-    } else {
-      if (yn.abs() <= 0.0) {
-        theta = Math.pi * 0.5;
-        if (xn < 0.0) theta = -theta;
-      } else
-        theta = Math.atan2(xn, yn);
-    }
-    var alon = theta / sn + olon;
-    rs['lat'] = alat * RADDEG;
-    rs['lng'] = alon * RADDEG;
-
-    return rs;
-  }
-
-  static gpsToGRID(double v1, double v2) {
-    var rs = {};
-    double theta;
-
-    rs['lat'] = v1;
-    rs['lng'] = v2;
-    var ra = Math.tan(Math.pi * 0.25 + (v1) * DEGRAD * 0.5);
-    ra = re * sf / Math.pow(ra, sn);
-    theta = v2 * DEGRAD - olon;
-    if (theta > Math.pi) theta -= 2.0 * Math.pi;
-    if (theta < -Math.pi) theta += 2.0 * Math.pi;
-    theta *= sn;
-    rs['x'] = (ra * Math.sin(theta) + XO + 0.5).floor();
-    rs['y'] = (ro - ra * Math.cos(theta) + YO + 0.5).floor();
-
-    return rs;
-  }
-}
-
-rainCodeToString(int code) {
-  switch (code) {
-    case 0:
-      return 'sunny';
-    case 1:
-      return 'rainy';
-    case 2:
-      return 'snow';
-    case 3:
-      return 'snow';
-    case 5:
-      return 'rainy';
-    case 6:
-      return 'snow';
-    case 7:
-      return 'snow';
-  }
-}
-
-skyCodeToString(int code) {
-  switch (code) {
-    case 1:
-      return 'sunny';
-    case 3:
-      return 'cloudy';
-    case 4:
-      return 'cloudy';
-  }
-}
-
 // class GeoGridText extends StatefulWidget {
 //   GeoGridText({
 //     super.key,
@@ -500,7 +384,171 @@ skyCodeToString(int code) {
 //     );
 //   }
 // }
+class GridGpsConvertor {
+  static const double RE = 6371.00877; // 지구 반경(km)
+  static const double GRID = 5.0; // 격자 간격(km)
+  static const double SLAT1 = 30.0; // 투영 위도1(degree)
+  static const double SLAT2 = 60.0; // 투영 위도2(degree)
+  static const double OLON = 126.0; // 기준점 경도(degree)
+  static const double OLAT = 38.0; // 기준점 위도(degree)
+  static const double XO = 43; // 기준점 X좌표(GRID)
+  static const double YO = 136; // 기1준점 Y좌표(GRID)
 
+  static const double DEGRAD = Math.pi / 180.0;
+  static const double RADDEG = 180.0 / Math.pi;
+
+  static double get re => RE / GRID;
+
+  static double get slat1 => SLAT1 * DEGRAD;
+
+  static double get slat2 => SLAT2 * DEGRAD;
+
+  static double get olon => OLON * DEGRAD;
+
+  static double get olat => OLAT * DEGRAD;
+
+  static double get snTmp =>
+      Math.tan(Math.pi * 0.25 + slat2 * 0.5) /
+          Math.tan(Math.pi * 0.25 + slat1 * 0.5);
+
+  static double get sn =>
+      Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(snTmp);
+
+  static double get sfTmp => Math.tan(Math.pi * 0.25 + slat1 * 0.5);
+
+  static double get sf => Math.pow(sfTmp, sn) * Math.cos(slat1) / sn;
+
+  static double get roTmp => Math.tan(Math.pi * 0.25 + olat * 0.5);
+
+  static double get ro => re * sf / Math.pow(roTmp, sn);
+
+  static gridToGPS(int v1, int v2) {
+    var rs = {};
+    double theta;
+
+    rs['x'] = v1;
+    rs['y'] = v2;
+    int xn = (v1 - XO).toInt();
+    int yn = (ro - v2 + YO).toInt();
+    var ra = Math.sqrt(xn * xn + yn * yn);
+    if (sn < 0.0) ra = -ra;
+    var alat = Math.pow((re * sf / ra), (1.0 / sn));
+    alat = 2.0 * Math.atan(alat) - Math.pi * 0.5;
+
+    if (xn.abs() <= 0.0) {
+      theta = 0.0;
+    } else {
+      if (yn.abs() <= 0.0) {
+        theta = Math.pi * 0.5;
+        if (xn < 0.0) theta = -theta;
+      } else
+        theta = Math.atan2(xn, yn);
+    }
+    var alon = theta / sn + olon;
+    rs['lat'] = alat * RADDEG;
+    rs['lng'] = alon * RADDEG;
+
+    return rs;
+  }
+
+  static gpsToGRID(double v1, double v2) {
+    var rs = {};
+    double theta;
+
+    rs['lat'] = v1;
+    rs['lng'] = v2;
+    var ra = Math.tan(Math.pi * 0.25 + (v1) * DEGRAD * 0.5);
+    ra = re * sf / Math.pow(ra, sn);
+    theta = v2 * DEGRAD - olon;
+    if (theta > Math.pi) theta -= 2.0 * Math.pi;
+    if (theta < -Math.pi) theta += 2.0 * Math.pi;
+    theta *= sn;
+    rs['x'] = (ra * Math.sin(theta) + XO + 0.5).floor();
+    rs['y'] = (ro - ra * Math.cos(theta) + YO + 0.5).floor();
+
+    return rs;
+  }
+}
+
+//weather
+rainCodeToString(int code) {
+  switch (code) {
+    case 0:
+      return 'sunny';
+    case 1:
+      return 'rainy';
+    case 2:
+      return 'snow';
+    case 3:
+      return 'snow';
+    case 5:
+      return 'rainy';
+    case 6:
+      return 'snow';
+    case 7:
+      return 'snow';
+  }
+}
+skyCodeToString(int code) {
+  switch (code) {
+    case 1:
+      return 'sunny';
+    case 3:
+      return 'cloudy';
+    case 4:
+      return 'cloudy';
+  }
+}
+Future<SuperFctListWithTime> makeFctListWithTime()async{
+  superFctItems = getSuperFctListJson();
+  List<ItemSuperFct> gotFct = await superFctItems;
+  return SuperFctListWithTime(gotFct, DateTime.now());
+}
+Future<SuperNctListWithTime> makeNctListWithTime()async{
+  superNctItems = getSuperNctListJson();
+  List<ItemSuperNct> gotNct = await superNctItems;
+  return SuperNctListWithTime(gotNct, DateTime.now());
+}
+void setWeatherData() async {
+  appPrint('setWeatherData >');
+  try {
+    recentFct = await makeFctListWithTime();
+    recentNct = await makeNctListWithTime();
+    saveFile('recentFctData', recentFct);
+    saveFile('recentNctData', recentNct);
+  } catch (e) {
+    appPrint('$e at setWeatherData');
+  }
+}
+dynamic loadWeatherFile(String fileName, String caller)async{
+  appPrint('called by $caller');
+  String filePath = await getFilePath(fileName);
+  File file = File('$filePath.json');
+  try{
+    if (file.existsSync()) {
+      String contents = await file.readAsString();
+      if(caller=='fct'){
+        appPrint('success load file $filePath.json');
+        return SuperFctListWithTime.fromJson(jsonDecode(contents));
+      }else{
+        appPrint('success load file $filePath.json');
+        return SuperNctListWithTime.fromJson(jsonDecode(contents));
+      }
+    }else{
+      appPrint('there are no file called $fileName');
+      if(caller == 'fct'){
+        return makeFctListWithTime();
+      }else{
+        return makeNctListWithTime();
+      }
+    }
+  }catch (e){
+    appPrint('fail load file $filePath.json');
+  }
+
+}
+
+//firestore
 void commitBatchFirestore(List<Map<String, String>> data)async{
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   WriteBatch batch = firestore.batch();
@@ -513,7 +561,6 @@ void commitBatchFirestore(List<Map<String, String>> data)async{
   //한번에 commit
   await batch.commit();
 }
-
 void updateDataFirestore(String dataKind, String content) async {
   try {
       DocumentReference documentReference = FirebaseFirestore.instance.collection(productName).doc(productSerial);
@@ -524,7 +571,6 @@ void updateDataFirestore(String dataKind, String content) async {
     appPrint('update fail: $e');
   }
 }
-
 Future<String> readDataFirestore(String dataKind) async {
   String returnString ='';
   try {
@@ -553,17 +599,25 @@ void appPrint(String s){
 
 void setPrefs(String key, String data)async{
   // Obtain shared preferences.
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setString(key, data);
+  try{final SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(key, data);}
+  catch (e) {
+    appPrint('error: $e');
+  }
+
 }
 
 Future<String> getPrefs(String key) async{
-  // Obtain shared preferences.
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String value = prefs.getString(key) ?? 'no data';
-  appPrint(value);
+  try{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String value = prefs.getString(key) ?? 'no data';
+    appPrint(value);
 
-  return value;
+    return value;
+  }
+  catch (e) {
+    return 'no data';
+  }
 }
 
 void removePrefs(String key)async{
@@ -571,6 +625,40 @@ void removePrefs(String key)async{
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove(key);
 }
+
+Future<List<ItemSuperNct>> getSuperNctListJson({isLog = false}) async {
+  appPrint('getSuperNctListJson >');
+  final weather = Weather(
+    serviceKey: weatherApiKey,
+    pageNo: 1,
+    numOfRows: 100,
+    nx: coordLon,
+    ny: coordLat,
+  );
+  final List<ItemSuperNct> items = [];
+  final json =
+  await SuperNctRepositoryImp(isLog: isLog).getItemListJSON(weather);
+  json.map((e) => items.add(e)).toList();
+
+  return items;
+}
+Future<List<ItemSuperFct>> getSuperFctListJson({isLog = false}) async {
+  appPrint('getSuperFctListJson >');
+  final weather = Weather(
+    serviceKey: weatherApiKey,
+    pageNo: 1,
+    numOfRows: 100,
+    nx: coordLon,
+    ny: coordLat,
+  );
+  final List<ItemSuperFct> items = [];
+  final json =
+  await SuperFctRepositoryImp(isLog: isLog).getItemListJSON(weather);
+  json.map((e) => items.add(e)).toList();
+
+  return items;
+}
+
 
 void saveFile(String fileName, data)async{
   String filePath = await getFilePath(fileName);
@@ -581,32 +669,6 @@ void saveFile(String fileName, data)async{
   }catch (e) {
     appPrint('fail saving file $filePath.json');
   }
-}
-
-dynamic loadFile(String fileName, String caller)async{
-  String filePath = await getFilePath(fileName);
-  File file = File('$filePath.json');
-  Object returnVar;
-  try{
-    if (file.existsSync()) {
-      String contents = await file.readAsString();
-      if(caller=='fct'){
-        returnVar =  RecentSuperFctData.fromJson(jsonDecode(contents));
-      }else if(caller=='nct'){
-        returnVar =  RecentSuperNctData.fromJson(jsonDecode(contents));
-      }else{
-        returnVar = 'wrong caller file';
-      }
-    }else{
-      appPrint('there are no file called $fileName');
-      returnVar =  'no file';
-    }
-    appPrint('success load file $filePath.json');
-    return returnVar;
-  }catch (e){
-    appPrint('fail load file $filePath.json');
-  }
-
 }
 
 Future<String> getFilePath(String fileName) async {
