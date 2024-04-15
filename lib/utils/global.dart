@@ -1,4 +1,5 @@
 import 'package:c1/utils/app_components.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:korea_weather_api/korea_weather_api.dart';
 
 double coordLon = 126.5765034; //경도
@@ -66,3 +67,8 @@ class SuperFctListWithTime{
     return SuperFctListWithTime(itemList, time);
   }
 }
+
+FirebaseAuth auth = FirebaseAuth.instance;
+User? user;
+
+bool didLogin = false;

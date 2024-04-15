@@ -5,6 +5,7 @@ import '../utils/appTools.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_components.dart';
 import 'dashboard_page.dart';
+import '../utils/global.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -43,18 +44,27 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _signIn() async {
     try {
       UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await auth.signInWithEmailAndPassword(
         email: _usernameController.text,
         password: _passwordController.text,
       );
-      appToast(msg: "로그인 되었습니다.");
+      setState(() {
+        user = userCredential.user;
+        appPrint(user?.displayName ?? "no user name");
+      });
 
-      setPrefs('didLogin', 'true');
+      if (user != null) {
+        // 로그인 성공 시 사용자 정보를 전역 변수에 저장
+        // 이후 필요한 곳에서 해당 정보를 사용할 수 있음
 
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) =>  const AppFrame()),
-      );
+        // 화면 이동 등 필요한 작업 수행
+        appToast(msg: "로그인 되었습니다.");
+        setPrefs('didLogin', 'true');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) =>  const AppFrame()),
+        );
+      }
     } catch (e) {
       appToast(msg: "로그인에 실패했습니다.");
       appPrint("Failed to sign in with email and password: $e");

@@ -88,82 +88,90 @@ class _SettingPageState extends State<SettingPage> {
     _coordLatController.text = '$coordLat';
     _coordLonController.text = '$coordLon';
     return AppPage(
-      child: Column(
-        children: [
-          Expanded(
-            flex: 100,
-            child: AppText(
-              '설정',
-              style: TextStyle(fontSize: fontBig),
-            ),
-          ),
-          Expanded(
-            flex: 500,
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 100,
-                  child: _buildSettingArea4Var(
-                    title: '작동 기준',
-                    sideHintLTL: '작동',
-                    lt: _actTempController,
-                    sideHintLTR: '°C',
-                    rt: _actHumController,
-                    sideHintRTR: '%',
-                    sideHintLBL: '정지',
-                    lb: _stopTempController,
-                    sideHintLBR: '°C',
-                    rb: _stopHumController,
-                    sideHintRBR: '%',
-                  ),
+      reSizable: false,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            children: [
+              Expanded(
+                flex: 100,
+                child: AppText(
+                  '설정',
+                  style: TextStyle(fontSize: fontMiddleBig),
                 ),
-                Expanded(
-                  flex: 100,
-                  child: _buildSettingArea4Var(
-                    title: '적정 기준',
-                    sideHintLTL: '온도',
-                    lt: _goodLowTempController,
-                    sideHintLTR: '에서',
-                    rt: _goodHighTempController,
-                    sideHintRTR: '까지',
-                    sideHintLBL: '습도',
-                    sideHintLBR: '에서',
-                    lb: _goodLowHumController,
-                    rb: _goodHighHumController,
-                    sideHintRBR: '까지',
-                  ),
-                ),
-                Expanded(
-                  flex: 100,
-                  child: _buildPosition(),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-              flex: 100,
-              child: Row(
-                children: [
-                  const Spacer(flex: 100,),
-                  Expanded(
-                    flex: 300,
-                    child: Column(
-                      children: [
-                        const Spacer(),
-                        AppButton(
-                          onPressed: () {
-                            _send2Firestore();
-                          },
-                          text: '적용',
-                        ),
-                        const Spacer(),
-                      ],
+              ),
+              Expanded(
+                flex: 500,
+                child: Column(
+                  children: [
+                    Expanded(
+                      flex: 100,
+                      child: _buildSettingArea4Var(
+                        title: '작동 기준',
+                        sideHintLTL: '작동',
+                        lt: _actTempController,
+                        sideHintLTR: '°C',
+                        rt: _actHumController,
+                        sideHintRTR: '%',
+                        sideHintLBL: '정지',
+                        lb: _stopTempController,
+                        sideHintLBR: '°C',
+                        rb: _stopHumController,
+                        sideHintRBR: '%',
+                      ),
                     ),
-                  ),
-                  const Spacer(flex: 100,),
-                ],
-              )),
-        ],
+                    Expanded(
+                      flex: 100,
+                      child: _buildSettingArea4Var(
+                        title: '적정 기준',
+                        sideHintLTL: '온도',
+                        lt: _goodLowTempController,
+                        sideHintLTR: '에서',
+                        rt: _goodHighTempController,
+                        sideHintRTR: '까지',
+                        sideHintLBL: '습도',
+                        sideHintLBR: '에서',
+                        lb: _goodLowHumController,
+                        rb: _goodHighHumController,
+                        sideHintRBR: '까지',
+                      ),
+                    ),
+                    Expanded(
+                      flex: 100,
+                      child: _buildPosition(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                  flex: 100,
+                  child: Row(
+                    children: [
+                      const Spacer(flex: 100,),
+                      Expanded(
+                        flex: 300,
+                        child: Column(
+                          children: [
+                            const Spacer(),
+                            AppButton(
+                              onPressed: () {
+                                _send2Firestore();
+                              },
+                              text: '적용',
+                            ),
+                            const Spacer(),
+                          ],
+                        ),
+                      ),
+                      const Spacer(flex: 100,),
+                    ],
+                  )),
+            ],
+          ),
+        ),
       ),
     );
   }

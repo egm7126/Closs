@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:c1/pages/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -19,15 +20,14 @@ class AppFrame extends StatefulWidget {
   State<AppFrame> createState() => _AppFrameState();
 }
 
-class _AppFrameState extends State<AppFrame> {
+class _AppFrameState extends State<AppFrame> with SingleTickerProviderStateMixin {
+  String? _userName;
+
   int _selectedIndex = 0;
   bool _isDrawerOpen = false;
 
-  String _userName = 'hi';
-  bool _didLogin = false;
-
   void getLogin() async {
-    _didLogin = await getLoginStatus();
+    didLogin = await getLoginStatus();
   }
 
   static final List<Widget> _widgetOptions = <Widget>[
@@ -39,6 +39,29 @@ class _AppFrameState extends State<AppFrame> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  // FirebaseAuth를 사용하여 현재 로그인된 사용자의 정보를 가져오는 함수
+  void _fetchUserName() async {
+    try {
+      // FirebaseAuth의 currentUser 속성을 통해 현재 로그인된 사용자 정보 가져오기
+      // user가 null이 아닌 경우 사용자 이름을 _userName에 저장
+      if (user != null) {
+        setState(() {
+          _userName = user?.displayName;
+        });
+      }
+    } catch (e) {
+      // 사용자 정보를 가져오는 도중 에러 발생 시 에러 처리
+      print('Error fetching user name: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchUserName();
   }
 
   @override
@@ -119,16 +142,28 @@ class _AppFrameState extends State<AppFrame> {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: <Widget>[
-                  const DrawerHeader(
+                  DrawerHeader(
                     decoration: BoxDecoration(
                       color: appBlue,
                     ),
-                    child: Text(
-                      '사용자 정보',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: fontMiddle,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '사용자 정보',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: fontMiddle,
+                          ),
+                        ),
+                        Text(
+                          _userName ?? '로그인이 필요합니다.',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: fontSmall,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   ListTile(
@@ -152,6 +187,7 @@ class _AppFrameState extends State<AppFrame> {
                         _isDrawerOpen = false;
                         // Drawer를 닫습니다.
                       });
+                      setPrefs('didLogin', 'false');
 
                       Navigator.push(
                         context,
@@ -173,11 +209,13 @@ class AppPage extends StatefulWidget {
     required this.child,
     this.backgroundColor = appBackWhite,
     this.offInnerGap = false,
+    this.reSizable = true,
   });
 
   final Widget child;
   final Color backgroundColor;
   final bool offInnerGap;
+  final bool reSizable;
 
   @override
   State<AppPage> createState() => _AppPageState();
@@ -207,6 +245,7 @@ class _AppPageState extends State<AppPage> {
         scaffoldBackgroundColor: widget.backgroundColor,
       ),
       home: Scaffold(
+        resizeToAvoidBottomInset: widget.reSizable,
         body: widget.offInnerGap
             ? Center(child: widget.child)
             : SafeArea(

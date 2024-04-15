@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snapshot){
             if (snapshot.connectionState == ConnectionState.done) {
               if(snapshot.hasData){
-                return  const AppFrame();
+                return snapshot.data ?? const AppIndicator();
               }else{
                 return  const AppIndicator();
               }
@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
   Future<Widget> choosePage() async{
     if(await getLoginStatus()){
       //when client have login log
-      return const DashBoardPage();
+      return const AppFrame();
     }
     return const LoginPage();
   }

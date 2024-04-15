@@ -110,6 +110,8 @@ Future<bool> getLoginStatus() async {
   bool returnBool = false;
   if(await getPrefs('didLogin') == 'true'){
     returnBool = true;
+    appPrint('logged in');
+    appToast(msg: '자동 로그인');
   }
   return returnBool;
 }
