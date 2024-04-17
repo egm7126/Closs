@@ -48,7 +48,7 @@ class _SettingPageState extends State<SettingPage> {
   final TextEditingController _coordLatController = TextEditingController();
   final TextEditingController _coordLonController = TextEditingController();
 
-  void loadSettingPara() async {
+  void loadSettingPara() {
     _actHumController.text = actHum;
     _actTempController.text = actTemp;
     _stopHumController.text = stopHum;
@@ -75,12 +75,15 @@ class _SettingPageState extends State<SettingPage> {
       commitBatchFirestore(data);
       coordLat = double.parse(_coordLatController.text);
       coordLon = double.parse(_coordLonController.text);
+      getSettingPara();
       appToast(msg: '적용되었습니다.');
     }catch (e) {
       appToast(msg: '오류가 발생하였습니다.');
     }
     
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,18 +112,13 @@ class _SettingPageState extends State<SettingPage> {
                   children: [
                     Expanded(
                       flex: 100,
-                      child: _buildSettingArea4Var(
+                      child: _buildSettingArea2Var(
                         title: '작동 기준',
-                        sideHintLTL: '작동',
+                        sideHintLTL: '이상',
                         lt: _actTempController,
                         sideHintLTR: '°C',
                         rt: _actHumController,
                         sideHintRTR: '%',
-                        sideHintLBL: '정지',
-                        lb: _stopTempController,
-                        sideHintLBR: '°C',
-                        rb: _stopHumController,
-                        sideHintRBR: '%',
                       ),
                     ),
                     Expanded(
@@ -255,6 +253,35 @@ class _SettingPageState extends State<SettingPage> {
                 SideHint(text: sideHintRBR),
               ],
             ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingArea2Var({
+    required String title,
+    required TextEditingController lt,
+    required TextEditingController rt,
+    sideHintLTL = '',
+    sideHintLTR = '',
+    sideHintRTL = '',
+    sideHintRTR = '',
+  }) {
+    return Column(
+      children: [
+        _SettingMiddleTitle(title: title),
+        Row(
+          children: [
+            SideHint(text: sideHintLTL),
+            _SettingTextFieldByExpanded(controller: lt),
+            SideHint(text: sideHintLTR),
+            const SizedBox(
+              width: 10,
+            ),
+            SideHint(text: sideHintRTL),
+            _SettingTextFieldByExpanded(controller: rt),
+            SideHint(text: sideHintRTR),
           ],
         ),
       ],

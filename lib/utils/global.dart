@@ -22,6 +22,8 @@ String stopHum = '';
 
 bool isWeatherUpdated = false;
 
+bool firstOpen = true;
+
 //weather relations
 late Future<List<ItemSuperNct>> superNctItems;
 late Future<List<ItemSuperFct>> superFctItems;

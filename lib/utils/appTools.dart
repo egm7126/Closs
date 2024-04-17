@@ -111,7 +111,11 @@ Future<bool> getLoginStatus() async {
   if(await getPrefs('didLogin') == 'true'){
     returnBool = true;
     appPrint('logged in');
-    appToast(msg: '자동 로그인');
+    if(firstOpen){
+      firstOpen = false;
+      appToast(msg: '자동 로그인');
+    }
+
   }
   return returnBool;
 }
@@ -697,4 +701,25 @@ void getSettingPara() async{
   goodLowTemp = await readDataFirestore('goodLowTemp');
   goodHighHum = await readDataFirestore('goodHighHum');
   goodHighTemp = await readDataFirestore('goodHighTemp');
+
+  autoFan();
+}
+
+void autoFan(){
+
+  appPrint(actHum);
+  appPrint(innerHum);
+  appPrint(actTemp);
+  appPrint(innerTemp);
+  double dActHum = double.parse(actHum);
+  double dInnerHum = double.parse(innerHum);
+  double dActTemp = double.parse(actTemp);
+  double dInnerTemp = double.parse(innerTemp);
+  if((dActHum<=dInnerHum)||(dActTemp<=dInnerTemp)){
+    updateDataFirestore('fan', 'on');
+    appToast(msg: '자동 작동할께요');
+  }else{
+    updateDataFirestore('fan', 'off');
+    appToast(msg: '이제 쾌적해요');
+  }
 }
